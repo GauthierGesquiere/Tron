@@ -57,7 +57,7 @@ void PlayerControllerComponent::RotateArm(bool Clockwise)
 void PlayerControllerComponent::ShootBullet()
 {
 	const auto gObject = std::make_shared<dae::GameObject>();
-	gObject->AddComponent(new PlayerBulletComponent(m_pLevelIndicesWalls, 10, m_Size, { sin(M_PI * m_ArmDegrees / 180.0f), cos(M_PI * m_ArmDegrees / 180.0f) }, { m_pOwner->GetTransform().GetPosition().x + m_pOwner->GetTransform().GetRect().width / 2, m_pOwner->GetTransform().GetPosition().y + m_pOwner->GetTransform().GetRect().height / 2 }));
+	gObject->AddComponent(new PlayerBulletComponent(m_pLevelIndicesWalls, 10, m_Size, { sin(M_PI * (m_ArmDegrees + 90) / 180.0f), cos(M_PI * (m_ArmDegrees + 90) / 180.0f) }, { m_pOwner->GetTransform().GetPosition().x + m_pOwner->GetTransform().GetRect().width / 2, m_pOwner->GetTransform().GetPosition().y + m_pOwner->GetTransform().GetRect().height / 2 }));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 }
 

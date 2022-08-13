@@ -36,27 +36,6 @@ void ArmComponent::Update(float deltaSec)
 {
 	Component::Update(deltaSec);
 
-	/*if (*m_MoveDirection == MoveDirections::Down)
-	{
-		m_Offset.y = -11;
-		m_Offset.x = 10;
-	}
-	if (*m_MoveDirection == MoveDirections::Up)
-	{
-		m_Offset.y = -5;
-		m_Offset.x = 10;
-	}
-	if (*m_MoveDirection == MoveDirections::Left)
-	{
-		m_Offset.y = -8;
-		m_Offset.x = 14;
-	}
-	if (*m_MoveDirection == MoveDirections::Right)
-	{
-		m_Offset.y = -8;
-		m_Offset.x = 8;
-	}*/
-
 	std::string fullPath{};
 
 	int modifier{};
@@ -66,24 +45,108 @@ void ArmComponent::Update(float deltaSec)
 		modifier = 0;
 		m_FlipVertically = false;
 		m_FlipHorizontally = false;
+
+		if (*m_MoveDirection == MoveDirections::Down)
+		{
+			m_Offset.y = -15;
+			m_Offset.x = 9;
+		}
+		if (*m_MoveDirection == MoveDirections::Up)
+		{
+			m_Offset.y = -5;
+			m_Offset.x = 9;
+		}
+		if (*m_MoveDirection == MoveDirections::Left)
+		{
+			m_Offset.y = -10;
+			m_Offset.x = 14;
+		}
+		if (*m_MoveDirection == MoveDirections::Right)
+		{
+			m_Offset.y = -10;
+			m_Offset.x = 5;
+		}
 	}
 	else if (*m_Degrees < 180)
 	{
 		modifier = 90;
 		m_FlipHorizontally = false;
 		m_FlipVertically = true;
+
+		if (*m_MoveDirection == MoveDirections::Down)
+		{
+			m_Offset.y = -15;
+			m_Offset.x = -9;
+		}
+		if (*m_MoveDirection == MoveDirections::Up)
+		{
+			m_Offset.y = -5;
+			m_Offset.x = -9;
+		}
+		if (*m_MoveDirection == MoveDirections::Left)
+		{
+			m_Offset.y = -10;
+			m_Offset.x = -5;
+		}
+		if (*m_MoveDirection == MoveDirections::Right)
+		{
+			m_Offset.y = -10;
+			m_Offset.x = -14;
+		}
 	}
 	else if (*m_Degrees < 270)
 	{
 		modifier = 0;
 		m_FlipHorizontally = true;
 		m_FlipVertically = true;
+
+		if (*m_MoveDirection == MoveDirections::Down)
+		{
+			m_Offset.y = 5;
+			m_Offset.x = -9;
+		}
+		if (*m_MoveDirection == MoveDirections::Up)
+		{
+			m_Offset.y = 15;
+			m_Offset.x = -9;
+		}
+		if (*m_MoveDirection == MoveDirections::Left)
+		{
+			m_Offset.y = 10;
+			m_Offset.x = -5;
+		}
+		if (*m_MoveDirection == MoveDirections::Right)
+		{
+			m_Offset.y = 10;
+			m_Offset.x = -14;
+		}
 	}
 	else if (*m_Degrees < 360)
 	{
 		modifier = 90;
 		m_FlipHorizontally = true;
 		m_FlipVertically = false;
+
+		if (*m_MoveDirection == MoveDirections::Down)
+		{
+			m_Offset.y = 5;
+			m_Offset.x = 9;
+		}
+		if (*m_MoveDirection == MoveDirections::Up)
+		{
+			m_Offset.y = 15;
+			m_Offset.x = 9;
+		}
+		if (*m_MoveDirection == MoveDirections::Left)
+		{
+			m_Offset.y = 10;
+			m_Offset.x = 14;
+		}
+		if (*m_MoveDirection == MoveDirections::Right)
+		{
+			m_Offset.y = 10;
+			m_Offset.x = 5;
+		}
 	}
 
 	//std::cout << abs(modifier - (*m_Degrees % 90)) << std::endl;
