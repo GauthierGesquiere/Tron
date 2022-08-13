@@ -1,6 +1,8 @@
 #include "LevelsComponent.h"
 #include <memory>
 
+#include "EnemyControllerComponent.h"
+#include "EnemyStateComponent.h"
 #include "EventQueue.h"
 #include "GameObject.h"
 #include "PlayerControllerComponent.h"
@@ -20,6 +22,7 @@ LevelsComponent::LevelsComponent(unsigned int width, unsigned int height, unsign
 	
 	LoadLevel(m_level);
 	CreatePlayers(1);
+	CreateEnemy();
 
 	LoadData();
 }
@@ -80,7 +83,30 @@ void LevelsComponent::CreatePlayers(unsigned amount)
 
 void LevelsComponent::CreateEnemy()
 {
-	
+	const auto gObject = std::make_shared<dae::GameObject>();
+	gObject->AddComponent(new RenderSpriteComponent());
+	int randInt = rand() % 10;
+
+	EnemyType type;
+	if (randInt > 8)
+	{
+		type = EnemyType::Tank;
+	}
+	else
+	{
+		type = EnemyType::Recognizer;
+	}
+
+	gObject->AddComponent(new EnemyStateComponent(m_WindowWidth, m_WindowHeight, m_PlayerDims, m_SourceToDestRatio, type));
+
+	glm::vec2 spawnPoint{};
+	spawnPoint = { 161,  356 };
+
+
+	//spawnPoint = { 0, -10.f };
+	gObject->AddComponent(new EnemyControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio, spawnPoint));
+	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
+	m_pEnemies.push_back(gObject);
 }
 
 void LevelsComponent::LoadData()
