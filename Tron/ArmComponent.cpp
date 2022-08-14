@@ -19,6 +19,11 @@ ArmComponent::ArmComponent(unsigned int Dims, glm::vec2 Size, int* degrees, cons
 {
 }
 
+void ArmComponent::TankIsKilled()
+{
+	dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_RenderObj);
+}
+
 void ArmComponent::Startup()
 {
 	Component::Startup();

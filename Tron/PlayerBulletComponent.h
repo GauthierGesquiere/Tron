@@ -3,7 +3,7 @@
 class PlayerBulletComponent : public BulletComponent
 {
 public:
-	PlayerBulletComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, unsigned int Dims, glm::vec2 Size, glm::vec2 Directions, glm::vec2 startPos);
+	PlayerBulletComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::shared_ptr<dae::GameObject>>* pTanks, unsigned int Dims, glm::vec2 Size, glm::vec2 Directions, glm::vec2 startPos);
 	PlayerBulletComponent() = default;
 	~PlayerBulletComponent() override = default;
 	PlayerBulletComponent(const PlayerBulletComponent& other) = delete;

@@ -7,6 +7,7 @@
 
 #pragma warning(push)
 #pragma warning (disable:4201)
+#include <memory>
 #include <glm/glm.hpp>
 
 
@@ -24,6 +25,7 @@ public:
 	EnemyControllerComponent& operator=(EnemyControllerComponent&& other) = delete;
 
 	void SetPlayerTransform(dae::Transform* playerTransform);
+	void SetAllEnemies(std::vector<std::shared_ptr<dae::GameObject>>* pEnemies);
 
 	bool m_IsInitialized{};
 
@@ -58,6 +60,8 @@ private:
 
 	float m_ElapsedSecAILogic{};
 	bool m_CheckAILogic{};
+
+	std::vector<std::shared_ptr<dae::GameObject>>* m_pTanks{};
 
 	glm::vec2 m_SpawnPoint{};
 };

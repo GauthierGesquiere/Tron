@@ -11,6 +11,7 @@
 #include "Renderer.h"
 #include "MoveCommand.h"
 #include "PlayerBulletComponent.h"
+#include "RenderSpriteComponent.h"
 #include "Scene.h"
 #include "SceneManager.h"
 #include "ShootCommand.h"
@@ -29,7 +30,12 @@ PlayerControllerComponent::PlayerControllerComponent(std::vector<std::vector<glm
 
 PlayerControllerComponent::~PlayerControllerComponent()
 {
-	 dae::InputManager::GetInstance().RemoveCommands();
+	dae::InputManager::GetInstance().RemoveCommands();
+}
+
+void PlayerControllerComponent::SetAllEnemies(std::vector<std::shared_ptr<dae::GameObject>>* pEnemies)
+{
+	m_pTanks = pEnemies;
 }
 
 void PlayerControllerComponent::RotateArm(bool Clockwise)
@@ -57,7 +63,7 @@ void PlayerControllerComponent::RotateArm(bool Clockwise)
 void PlayerControllerComponent::ShootBullet()
 {
 	const auto gObject = std::make_shared<dae::GameObject>();
-	gObject->AddComponent(new PlayerBulletComponent(m_pLevelIndicesWalls, 10, m_Size, { sin(M_PI * (m_ArmDegrees + 90) / 180.0f), cos(M_PI * (m_ArmDegrees + 90) / 180.0f) }, { m_pOwner->GetTransform().GetPosition().x + m_pOwner->GetTransform().GetRect().width / 2, m_pOwner->GetTransform().GetPosition().y + m_pOwner->GetTransform().GetRect().height / 2 }));
+	gObject->AddComponent(new PlayerBulletComponent(m_pLevelIndicesWalls, m_pTanks, 10, m_Size, { sin(M_PI * (m_ArmDegrees + 90) / 180.0f), cos(M_PI * (m_ArmDegrees + 90) / 180.0f) }, { m_pOwner->GetTransform().GetPosition().x + m_pOwner->GetTransform().GetRect().width / 2, m_pOwner->GetTransform().GetPosition().y + m_pOwner->GetTransform().GetRect().height / 2 }));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 }
 
@@ -89,6 +95,11 @@ bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 {
 	if (event->Message == "KilledPlayer")
 	{
+		m_ArmComponent->GetComponentOfType<ArmComponent>()->TankIsKilled();
+		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
+
+
+
 		m_IsDead = true;
 		dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer", this);
 	}

@@ -13,7 +13,7 @@
 class BulletComponent : public dae::Component
 {
 public:
-	BulletComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, unsigned int Dims, glm::vec2 Size, glm::vec2 Directions, glm::vec2 startPos);
+	BulletComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::shared_ptr<dae::GameObject>>* m_Tanks, unsigned int Dims, glm::vec2 Size, glm::vec2 Directions, glm::vec2 startPos);
 	BulletComponent() = default;
 	~BulletComponent() override = default;
 	BulletComponent(const BulletComponent& other) = delete;
@@ -43,9 +43,15 @@ private:
 	void TranslateSprite(float deltaTime) const;
 
 	bool CheckHitWall();
+	bool CheckIfHitTank();
 	const utils::Rectf CalculateBox() const;
 
-	float ElapsedSec{};
+	float m_ElapsedSec{};
+
+	float m_ElapsedSecWall{};
 	bool HitWall{ false };
+
+	std::vector<std::shared_ptr<dae::GameObject>>* m_Tanks{};
+
 };
 

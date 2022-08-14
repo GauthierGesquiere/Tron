@@ -1,19 +1,22 @@
 #include "BulletComponent.h"
 
+#include "EventQueue.h"
 #include "GameObject.h"
+#include "PlayerControllerComponent.h"
 #include "RenderSpriteComponent.h"
 #include "Scene.h"
 #include "SceneManager.h"
 
 
-BulletComponent::BulletComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, unsigned Dims, glm::vec2 Size, glm::vec2 Directions, glm::vec2 startPos)
+BulletComponent::BulletComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::shared_ptr<dae::GameObject>>* pTanks, unsigned Dims, glm::vec2 Size, glm::vec2 Directions, glm::vec2 startPos)
 	: m_SourcePath{"Tron/"}
 	  , m_Speed{50}
 	  , m_Velocity{Directions}
-	  , m_Dims{ Dims }
+	  , m_Dims{Dims}
 	  , m_Size{Size}
 	  , m_StartPos{startPos}
 	  , m_pLevelIndices{pLevelIndices}
+	  , m_Tanks{ pTanks }
 {
 }
 
@@ -29,6 +32,8 @@ void BulletComponent::Startup()
 	m_RenderObj = gObject;
 	m_Velocity *= m_Speed;
 
+	utils::Rectf box = CalculateBox();
+	m_RenderObj->GetTransform().SetRect(box);
 }
 
 void BulletComponent::Update(float deltaSec)
@@ -37,11 +42,11 @@ void BulletComponent::Update(float deltaSec)
 
 	if (HitWall)
 	{
-		ElapsedSec += deltaSec;
-		if (ElapsedSec >= 0.1f)
+		m_ElapsedSecWall += deltaSec;
+		if (m_ElapsedSecWall >= 0.1f)
 		{
 			HitWall = false;
-			ElapsedSec = 0.0f;
+			m_ElapsedSecWall = 0.0f;
 		}
 	}
 	else
@@ -49,6 +54,11 @@ void BulletComponent::Update(float deltaSec)
 		CheckHitWall();
 	}
 
+	m_ElapsedSec += deltaSec;
+	if (m_ElapsedSec >= 1.5f)
+	{
+		CheckIfHitTank();
+	}
 	TranslateSprite(deltaSec);
 
 	if (m_AmountOfBounces <= 0)
@@ -110,6 +120,25 @@ bool BulletComponent::CheckHitWall()
 
 	//m_HitHorizontal = false;
 
+	return false;
+}
+
+bool BulletComponent::CheckIfHitTank()
+{
+	for (auto tank : *m_Tanks)
+	{
+		auto tankPos = tank->GetTransform().GetPosition();
+		auto box = tank->GetTransform().GetRect();
+
+		if (IsOverlapping(utils::Rectf{tankPos.x, tankPos.y, box.width, box.height}, CalculateBox()))
+		{
+			if (tank->GetComponentOfType<PlayerControllerComponent>())
+			{
+				dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledPlayer"));
+			}
+			return true;
+		}
+	}
 	return false;
 }
 

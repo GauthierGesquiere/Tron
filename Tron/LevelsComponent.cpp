@@ -77,6 +77,8 @@ void LevelsComponent::CreatePlayers(unsigned amount)
 		gObject->AddComponent(new PlayerStateComponent(m_WindowWidth, m_WindowHeight, m_PlayerDims, m_SourceToDestRatio));
 		gObject->AddComponent(new PlayerControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio));
 		dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
+		m_pTanks.push_back(gObject);
+		gObject->GetComponentOfType<PlayerControllerComponent>()->SetAllEnemies(&m_pTanks);
 		m_pPlayer = gObject;
 	}
 }
@@ -107,7 +109,9 @@ void LevelsComponent::CreateEnemy()
 	gObject->AddComponent(new EnemyControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio, spawnPoint));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 	gObject->GetComponentOfType<EnemyControllerComponent>()->SetPlayerTransform(&m_pPlayer->GetTransform());
+	gObject->GetComponentOfType<EnemyControllerComponent>()->SetAllEnemies(&m_pTanks);
 	m_pEnemies.push_back(gObject);
+	m_pTanks.push_back(gObject);
 }
 
 void LevelsComponent::LoadData()

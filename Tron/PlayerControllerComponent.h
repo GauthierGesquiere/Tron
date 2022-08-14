@@ -10,6 +10,7 @@
 
 #include "ControllerComponent.h"
 #include "EventListener.h"
+#include "GameObject.h"
 #include "Subject.h"
 
 
@@ -25,6 +26,8 @@ public:
 	PlayerControllerComponent(PlayerControllerComponent&& other) = delete;
 	PlayerControllerComponent& operator=(const PlayerControllerComponent& other) = delete;
 	PlayerControllerComponent& operator=(PlayerControllerComponent&& other) = delete;
+
+	void SetAllEnemies(std::vector<std::shared_ptr<dae::GameObject>>* pEnemies);
 
 	void RotateArm(bool Clockwise);
 	void ShootBullet();
@@ -51,6 +54,7 @@ private:
 	int m_ArmDegrees{};
 
 	std::shared_ptr<dae::GameObject> m_ArmComponent{};
+	std::vector<std::shared_ptr<dae::GameObject>>* m_pTanks{};
 
 };
 

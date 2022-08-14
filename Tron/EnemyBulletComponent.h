@@ -3,7 +3,7 @@
 class EnemyBulletComponent : public BulletComponent
 {
 public:
-	EnemyBulletComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, unsigned int Dims, glm::vec2 Size, glm::vec2 Directions, glm::vec2 startPos);
+	EnemyBulletComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::shared_ptr<dae::GameObject>>* pTanks, unsigned int Dims, glm::vec2 Size, glm::vec2 Directions, glm::vec2 startPos);
 	EnemyBulletComponent() = default;
 	~EnemyBulletComponent() override = default;
 	EnemyBulletComponent(const EnemyBulletComponent& other) = delete;
@@ -14,5 +14,6 @@ public:
 protected:
 	void Startup() override;
 	void Update(float deltaSec) override;
+
 };
 

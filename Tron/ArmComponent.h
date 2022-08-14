@@ -20,6 +20,7 @@ public:
 	ArmComponent& operator=(const ArmComponent& other) = delete;
 	ArmComponent& operator=(ArmComponent&& other) = delete;
 
+	void TankIsKilled();
 protected:
 	void Startup() override;
 	void Update(float deltaSec) override;

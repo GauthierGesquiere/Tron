@@ -54,5 +54,7 @@ private:
 
 	std::shared_ptr<dae::GameObject> m_pPlayer{};
 	std::vector<std::shared_ptr<dae::GameObject>> m_pEnemies{};
+
+	std::vector<std::shared_ptr<dae::GameObject>> m_pTanks{};
 };
 

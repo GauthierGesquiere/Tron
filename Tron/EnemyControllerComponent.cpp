@@ -22,6 +22,11 @@ void EnemyControllerComponent::SetPlayerTransform(dae::Transform* playerTransfor
 	m_pPlayerTransform = playerTransform;
 }
 
+void EnemyControllerComponent::SetAllEnemies(std::vector<std::shared_ptr<dae::GameObject>>* pTanks)
+{
+	m_pTanks = pTanks;
+}
+
 void EnemyControllerComponent::Startup()
 {
 	m_pOwner->GetTransform().SetPosition(m_SpawnPoint.x, m_SpawnPoint.y, 0);
@@ -331,7 +336,7 @@ void EnemyControllerComponent::ShootBullet()
 	}
 
 	const auto gObject = std::make_shared<dae::GameObject>();
-	gObject->AddComponent(new EnemyBulletComponent(m_pLevelIndicesWalls, 8, m_Size, { sin(M_PI * armDegrees / 180.0f), cos(M_PI * armDegrees / 180.0f) }, { m_pOwner->GetTransform().GetPosition().x + m_pOwner->GetTransform().GetRect().width / 2, m_pOwner->GetTransform().GetPosition().y + m_pOwner->GetTransform().GetRect().height / 2 }));
+	gObject->AddComponent(new EnemyBulletComponent(m_pLevelIndicesWalls, m_pTanks, 8, m_Size, { sin(M_PI * armDegrees / 180.0f), cos(M_PI * armDegrees / 180.0f) }, { m_pOwner->GetTransform().GetPosition().x + m_pOwner->GetTransform().GetRect().width / 2, m_pOwner->GetTransform().GetPosition().y + m_pOwner->GetTransform().GetRect().height / 2 }));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 }
 
@@ -341,7 +346,7 @@ void EnemyControllerComponent::CheckIfNeedsToShootBullet(float deltaSec)
 	{
 		m_ElapsedSecShoot += deltaSec;
 
-		if (m_ElapsedSecShoot >= 1.5f)
+		if (m_ElapsedSecShoot >= 5.5f)
 		{
 			m_JustShot = false;
 			m_ElapsedSecShoot = 0.0f;
