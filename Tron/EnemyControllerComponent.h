@@ -49,6 +49,9 @@ private:
 
 	NeedUpdate m_NeededUpdate{};
 
+	float m_ElapsedSec{};
+	bool m_CheckAILogic{};
+
 	glm::vec2 m_SpawnPoint{};
 };
 

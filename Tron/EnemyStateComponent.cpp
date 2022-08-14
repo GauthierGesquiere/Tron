@@ -43,7 +43,7 @@ void EnemyStateComponent::Update(float deltaSec)
 
 void EnemyStateComponent::OnNotify(const dae::GameObject& /*actor*/, dae::Event* event)
 {
-	if (event->Message == "IsWalkingLeft")
+	if (event->Message == "IsDrivingRight")
 	{
 		m_CurrentState = State::DrivingHorizontal;
 
@@ -55,7 +55,7 @@ void EnemyStateComponent::OnNotify(const dae::GameObject& /*actor*/, dae::Event*
 		}
 		m_MirrorHorizontally = false;
 	}
-	else if (event->Message == "IsWalkingRight")
+	else if (event->Message == "IsDrivingLeft")
 	{
 		m_CurrentState = State::DrivingHorizontal;
 
@@ -67,7 +67,7 @@ void EnemyStateComponent::OnNotify(const dae::GameObject& /*actor*/, dae::Event*
 		}
 		m_MirrorHorizontally = true;
 	}
-	else if (event->Message == "IsClimbingDown")
+	else if (event->Message == "IsDrivingUp")
 	{
 		m_CurrentState = State::DrivingVertical;
 
@@ -79,7 +79,7 @@ void EnemyStateComponent::OnNotify(const dae::GameObject& /*actor*/, dae::Event*
 		}
 		m_MirrorVertically = false;
 	}
-	else if (event->Message == "IsClimbingUp")
+	else if (event->Message == "IsDrivingDown")
 	{
 		m_CurrentState = State::DrivingVertical;
 
