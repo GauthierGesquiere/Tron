@@ -1,16 +1,25 @@
 #include "EnemyControllerComponent.h"
 
 #include <iostream>
+#include <SDL_stdinc.h>
 
+#include "EnemyBulletComponent.h"
 #include "EnemyStateComponent.h"
 #include "EventQueue.h"
 #include "GameObject.h"
+#include "Scene.h"
+#include "SceneManager.h"
 
 EnemyControllerComponent::EnemyControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned enemyDims, glm::vec2 enemySize, glm::vec2 spawnPoint)
 	: ControllerComponent(pLevelIndices, pLevelIndicesWalls, enemyDims, enemySize)
 	, m_SpawnPoint{ spawnPoint }
 {
 	m_MovementSpeed = 25.0f;
+}
+
+void EnemyControllerComponent::SetPlayerTransform(dae::Transform* playerTransform)
+{
+	m_pPlayerTransform = playerTransform;
 }
 
 void EnemyControllerComponent::Startup()
@@ -66,6 +75,7 @@ void EnemyControllerComponent::Update(float deltaSec)
 	}
 
 	UpdateAILogic(deltaSec);
+	CheckIfNeedsToShootBullet(deltaSec);
 	TranslateSprite(deltaSec);
 
 	m_Velocity.x = 0.0f;
@@ -128,11 +138,11 @@ void EnemyControllerComponent::UpdateAILogic(float deltaSec)
 {
 	if (!m_CheckAILogic)
 	{
-		m_ElapsedSec += deltaSec;
+		m_ElapsedSecAILogic += deltaSec;
 
-		if (m_ElapsedSec >= 0.5f)
+		if (m_ElapsedSecAILogic >= 0.5f)
 		{
-			m_ElapsedSec = 0.0f;
+			m_ElapsedSecAILogic = 0.0f;
 			m_CheckAILogic = true;
 		}
 		else
@@ -294,4 +304,92 @@ void EnemyControllerComponent::UpdateAILogic(float deltaSec)
 	{
 		m_NeededUpdate = NeedUpdate::Up;
 	}
+}
+
+void EnemyControllerComponent::ShootBullet()
+{
+	m_JustShot = true;
+
+	int armDegrees;
+
+	switch (m_NeededUpdate)
+	{
+	case NeedUpdate::Up:
+		armDegrees = 180;
+		break;
+	case NeedUpdate::Down:
+		armDegrees = 0;
+		break;
+	case NeedUpdate::Left:
+		armDegrees = 270;
+		break;
+	case NeedUpdate::Right:
+		armDegrees = 90;
+		break;
+	case NeedUpdate::None:
+		break;
+	}
+
+	const auto gObject = std::make_shared<dae::GameObject>();
+	gObject->AddComponent(new EnemyBulletComponent(m_pLevelIndicesWalls, 8, m_Size, { sin(M_PI * armDegrees / 180.0f), cos(M_PI * armDegrees / 180.0f) }, { m_pOwner->GetTransform().GetPosition().x + m_pOwner->GetTransform().GetRect().width / 2, m_pOwner->GetTransform().GetPosition().y + m_pOwner->GetTransform().GetRect().height / 2 }));
+	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
+}
+
+void EnemyControllerComponent::CheckIfNeedsToShootBullet(float deltaSec)
+{
+	if (m_JustShot)
+	{
+		m_ElapsedSecShoot += deltaSec;
+
+		if (m_ElapsedSecShoot >= 1.5f)
+		{
+			m_JustShot = false;
+			m_ElapsedSecShoot = 0.0f;
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	const int x = m_pPlayerTransform->GetPosition().x - m_pOwner->GetTransform().GetPosition().x;
+	const int y = m_pPlayerTransform->GetPosition().y - m_pOwner->GetTransform().GetPosition().y;
+
+
+	if (abs(x) <= 5)
+	{
+		if (y > 0)
+		{
+			if (m_NeededUpdate == NeedUpdate::Down)
+			{
+				ShootBullet();
+			}
+		}
+		else
+		{
+			if (m_NeededUpdate == NeedUpdate::Up)
+			{
+				ShootBullet();
+			}
+		}
+	}
+
+	if (abs(y) <= 5)
+	{
+		if (x > 0)
+		{
+			if (m_NeededUpdate == NeedUpdate::Right)
+			{
+				ShootBullet();
+			}
+		}
+		else
+		{
+			if (m_NeededUpdate == NeedUpdate::Left)
+			{
+				ShootBullet();
+			}
+		}
+	}
+
 }

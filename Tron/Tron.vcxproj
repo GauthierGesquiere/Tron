@@ -168,6 +168,7 @@
     <ClCompile Include="ArmComponent.cpp" />
     <ClCompile Include="BulletComponent.cpp" />
     <ClCompile Include="ControllerComponent.cpp" />
+    <ClCompile Include="EnemyBulletComponent.cpp" />
     <ClCompile Include="EnemyControllerComponent.cpp" />
     <ClCompile Include="EnemyStateComponent.cpp" />
     <ClCompile Include="LevelsComponent.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="ArmComponent.h" />
     <ClInclude Include="BulletComponent.h" />
     <ClInclude Include="ControllerComponent.h" />
+    <ClInclude Include="EnemyBulletComponent.h" />
     <ClInclude Include="EnemyControllerComponent.h" />
     <ClInclude Include="EnemyStateComponent.h" />
     <ClInclude Include="LevelsComponent.h" />

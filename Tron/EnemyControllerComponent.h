@@ -23,6 +23,8 @@ public:
 	EnemyControllerComponent& operator=(const EnemyControllerComponent& other) = delete;
 	EnemyControllerComponent& operator=(EnemyControllerComponent&& other) = delete;
 
+	void SetPlayerTransform(dae::Transform* playerTransform);
+
 	bool m_IsInitialized{};
 
 private:
@@ -35,6 +37,8 @@ private:
 	void UpdateUp();
 
 	void UpdateAILogic(float deltaSec);
+	void ShootBullet();
+	void CheckIfNeedsToShootBullet(float deltaSec);
 
 	dae::Transform* m_pPlayerTransform{};
 
@@ -49,7 +53,10 @@ private:
 
 	NeedUpdate m_NeededUpdate{};
 
-	float m_ElapsedSec{};
+	float m_ElapsedSecShoot{};
+	bool m_JustShot{};
+
+	float m_ElapsedSecAILogic{};
 	bool m_CheckAILogic{};
 
 	glm::vec2 m_SpawnPoint{};

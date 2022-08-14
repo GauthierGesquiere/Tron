@@ -106,6 +106,7 @@ void LevelsComponent::CreateEnemy()
 	//spawnPoint = { 0, -10.f };
 	gObject->AddComponent(new EnemyControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio, spawnPoint));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
+	gObject->GetComponentOfType<EnemyControllerComponent>()->SetPlayerTransform(&m_pPlayer->GetTransform());
 	m_pEnemies.push_back(gObject);
 }
 
