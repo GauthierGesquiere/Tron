@@ -45,6 +45,11 @@ private:
 
 	unsigned int m_level{};
 
+	bool m_NeedsRestart{};
+	bool m_GameOver{};
+
+	float m_ElapsedSec{};
+
 	std::string m_SourcePath{};
 
 	std::vector<std::vector<glm::vec2>> m_LevelVertices{};

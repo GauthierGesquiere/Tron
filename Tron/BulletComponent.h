@@ -8,18 +8,22 @@
 
 #include <memory>
 #include <string>
+
+#include "EventListener.h"
 #include "utils.h"
 
-class BulletComponent : public dae::Component
+class BulletComponent : public dae::Component, public dae::EventListener
 {
 public:
 	BulletComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::shared_ptr<dae::GameObject>>* m_Tanks, unsigned int Dims, glm::vec2 Size, glm::vec2 Directions, glm::vec2 startPos);
-	BulletComponent() = default;
+	BulletComponent();
 	~BulletComponent() override = default;
 	BulletComponent(const BulletComponent& other) = delete;
 	BulletComponent(BulletComponent&& other) = delete;
 	BulletComponent& operator=(const BulletComponent& other) = delete;
 	BulletComponent& operator=(BulletComponent&& other) = delete;
+
+	bool OnEvent(const dae::Event* event) override;
 
 protected:
 	void Startup() override;

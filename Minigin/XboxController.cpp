@@ -34,9 +34,18 @@ public:
 		return true;
 	}
 
-	bool IsHold(ControllerButton button) const { return CurrentState.Gamepad.wButtons & int(button); }
-	bool IsPressed(ControllerButton button) const { return ButtonsPressedThisFrame & int(button); }
-	bool IsReleased(ControllerButton button) const { return ButtonsReleasedThisFrame & int(button); }
+	bool IsHold(ControllerButton button) const
+	{
+		 return CurrentState.Gamepad.wButtons & int(button);
+	}
+	bool IsPressed(ControllerButton button) const
+	{
+		return ButtonsPressedThisFrame & int(button);
+	}
+	bool IsReleased(ControllerButton button) const
+	{
+		return ButtonsReleasedThisFrame & int(button);
+	}
 };
 
 

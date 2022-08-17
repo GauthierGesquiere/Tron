@@ -52,6 +52,12 @@ bool dae::InputManager::ProcessInput()
 			{
 				continue;
 			}
+
+			if (command.first.PlayerControllerIndex != i)
+			{
+				continue;
+			}
+
 			switch (command.second.InputType)
 			{
 			case InputState::Hold:
@@ -90,6 +96,11 @@ bool dae::InputManager::ProcessInput()
 		for (const auto& command : m_Commands)
 		{
 			if (command.first.type != InputType::KeyBoard)
+			{
+				continue;
+			}
+
+			if (command.first.PlayerControllerIndex != i)
 			{
 				continue;
 			}

@@ -21,8 +21,8 @@ LevelsComponent::LevelsComponent(unsigned int width, unsigned int height, unsign
 	m_WindowHeight = height; //-100;
 	
 	LoadLevel(m_level);
-	CreatePlayers(1);
-	CreateEnemy();
+	CreatePlayers(2);
+	//CreateEnemy();
 
 	LoadData();
 }
@@ -33,17 +33,62 @@ LevelsComponent::~LevelsComponent()
 
 bool LevelsComponent::OnEvent(const dae::Event* event)
 {
+	if (event->Message == "RestartLevel")
+	{
+		m_NeedsRestart = true;
+	}
+	if (event->Message == "GameOver")
+	{
+		m_GameOver = true;
+	}
 	return false;
 }
 
 void LevelsComponent::Startup()
 {
 
+	dae::EventQueue::GetInstance().Subscribe("RestartLevel", this);
+	dae::EventQueue::GetInstance().Subscribe("GameOver", this);
 }
 
 void LevelsComponent::Update(float deltaSec)
 {
-	
+	if (m_NeedsRestart)
+	{
+		m_ElapsedSec += deltaSec;
+		if (m_ElapsedSec >= 2.8)
+		{
+			dae::EventQueue::GetInstance().Broadcast(new dae::Event("ClearAllBullets"));
+
+		}
+		if (m_ElapsedSec >= 3)
+		{
+			m_ElapsedSec = 0;
+			m_NeedsRestart = false;
+
+
+
+			for (auto enemy : m_pEnemies)
+			{
+				dae::SceneManager::GetInstance().GetActiveScene()->Remove(enemy);
+			}
+			m_pEnemies.clear();
+
+			for (auto tank : m_pTanks)
+			{
+				dae::SceneManager::GetInstance().GetActiveScene()->Remove(tank);
+			}
+			m_pTanks.clear();
+
+			dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pPlayer);
+			//m_pPlayer.reset();
+
+
+			CreatePlayers(1);
+			//CreateEnemy();
+			//CreateEnemy();
+		}
+	}
 }
 
 void LevelsComponent::LoadLevel(unsigned levelIndex)
@@ -75,7 +120,7 @@ void LevelsComponent::CreatePlayers(unsigned amount)
 		const auto gObject = std::make_shared<dae::GameObject>();
 		gObject->AddComponent(new RenderSpriteComponent());
 		gObject->AddComponent(new PlayerStateComponent(m_WindowWidth, m_WindowHeight, m_PlayerDims, m_SourceToDestRatio));
-		gObject->AddComponent(new PlayerControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio));
+		gObject->AddComponent(new PlayerControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio, i));
 		dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 		m_pTanks.push_back(gObject);
 		gObject->GetComponentOfType<PlayerControllerComponent>()->SetAllEnemies(&m_pTanks);

@@ -13,7 +13,7 @@
 class ArmComponent : public dae::Component
 {
 public:
-	ArmComponent(unsigned int Dims, glm::vec2 Size, int* degrees, const MoveDirections* moveDirections);
+	ArmComponent(unsigned int Dims, glm::vec2 Size, float* degrees, const MoveDirections* moveDirections);
 	~ArmComponent() override = default;
 	ArmComponent(const ArmComponent& other) = delete;
 	ArmComponent(ArmComponent&& other) = delete;
@@ -33,7 +33,7 @@ private:
 
 	unsigned int m_Dims{};
 	glm::vec2 m_Size{};
-	int* m_Degrees{};
+	float* m_Degrees{};
 
 	bool m_FlipHorizontally{ false };
 	bool m_FlipVertically{ false };

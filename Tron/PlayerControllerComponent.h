@@ -19,7 +19,7 @@
 class PlayerControllerComponent : public ControllerComponent, public dae::Subject, public dae::EventListener
 {
 public:
-	PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize);
+	PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize, unsigned int playerIdx);
 	//PlayerControllerComponent() = default;
 	~PlayerControllerComponent() override;
 	PlayerControllerComponent(const PlayerControllerComponent& other) = delete;
@@ -51,11 +51,12 @@ private:
 
 	MoveDirections m_PreviousDirections{};
 
-	int m_ArmDegrees{};
+	float m_ArmDegrees{};
 
 	std::shared_ptr<dae::GameObject> m_ArmComponent{};
 	std::vector<std::shared_ptr<dae::GameObject>>* m_pTanks{};
 
+	unsigned int m_PlayerIndex{};
 };
 
 

@@ -1,5 +1,6 @@
 #include "BulletComponent.h"
 
+#include "EnemyControllerComponent.h"
 #include "EventQueue.h"
 #include "GameObject.h"
 #include "PlayerControllerComponent.h"
@@ -20,9 +21,29 @@ BulletComponent::BulletComponent(std::vector<std::vector<glm::vec2>>* pLevelIndi
 {
 }
 
+BulletComponent::BulletComponent()
+{
+	dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
+}
+
+bool BulletComponent::OnEvent(const dae::Event* event)
+{
+	if (event->Message == "ClearAllBullets")
+	{
+		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_RenderObj);
+		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
+		
+		dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
+	}
+	return false;
+}
+
 void BulletComponent::Startup()
 {
 	Component::Startup();
+
+	dae::EventQueue::GetInstance().Subscribe("ClearAllBullets", this);
+
 
 	//Get the image
 	const auto gObject = std::make_shared<dae::GameObject>();
@@ -63,6 +84,7 @@ void BulletComponent::Update(float deltaSec)
 
 	if (m_AmountOfBounces <= 0)
 	{
+		dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
 		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_RenderObj);
 		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
 	}
@@ -134,7 +156,15 @@ bool BulletComponent::CheckIfHitTank()
 		{
 			if (tank->GetComponentOfType<PlayerControllerComponent>())
 			{
+				dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
 				dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledPlayer"));
+				dae::EventQueue::GetInstance().Broadcast(new dae::Event("RestartLevel"));
+			}
+
+			if (tank->GetComponentOfType<EnemyControllerComponent>())
+			{
+				dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
+				dae::SceneManager::GetInstance().GetActiveScene()->Remove(tank);
 			}
 			return true;
 		}

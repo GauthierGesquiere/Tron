@@ -9,7 +9,7 @@
 #include "Scene.h"
 #include "SceneManager.h"
 
-ArmComponent::ArmComponent(unsigned int Dims, glm::vec2 Size, int* degrees, const MoveDirections* moveDirections)
+ArmComponent::ArmComponent(unsigned int Dims, glm::vec2 Size, float* degrees, const MoveDirections* moveDirections)
 	: m_SourcePath{ "Tron/" }
 	, m_Offset{0, 0, 0}
 	, m_Dims{Dims}
@@ -45,7 +45,9 @@ void ArmComponent::Update(float deltaSec)
 
 	int modifier{};
 
-	if (*m_Degrees < 90 || *m_Degrees == 360)
+	const int temp = floor(*m_Degrees);
+
+	if (temp < 90 || temp == 360)
 	{
 		modifier = 0;
 		m_FlipVertically = false;
@@ -72,7 +74,7 @@ void ArmComponent::Update(float deltaSec)
 			m_Offset.x = 5;
 		}
 	}
-	else if (*m_Degrees < 180)
+	else if (temp < 180)
 	{
 		modifier = 90;
 		m_FlipHorizontally = false;
@@ -99,7 +101,7 @@ void ArmComponent::Update(float deltaSec)
 			m_Offset.x = -14;
 		}
 	}
-	else if (*m_Degrees < 270)
+	else if (temp < 270)
 	{
 		modifier = 0;
 		m_FlipHorizontally = true;
@@ -126,7 +128,7 @@ void ArmComponent::Update(float deltaSec)
 			m_Offset.x = -14;
 		}
 	}
-	else if (*m_Degrees < 360)
+	else if (temp < 360)
 	{
 		modifier = 90;
 		m_FlipHorizontally = true;
@@ -156,36 +158,54 @@ void ArmComponent::Update(float deltaSec)
 
 	//std::cout << abs(modifier - (*m_Degrees % 90)) << std::endl;
 
-	switch (abs(modifier - (*m_Degrees % 90)))
+	
+	if (abs(modifier - (temp % 90)))
+	{
+		
+	}
+
+	switch (abs(modifier - (temp % 90)))
 	{
 	case 0:
 		fullPath = m_SourcePath + "Player/Arm0Degrees.png";
 		break;
+	case 5:
 	case 10:
 		fullPath = m_SourcePath + "Player/Arm10Degrees.png";
 		break;
+	case 15:
 	case 20:
 		fullPath = m_SourcePath + "Player/Arm20Degrees.png";
 		break;
+	case 25:
 	case 30:
 		fullPath = m_SourcePath + "Player/Arm30Degrees.png";
 		break;
+	case 35:
 	case 40:
 		fullPath = m_SourcePath + "Player/Arm40Degrees.png";
 		break;
+	case 45:
 	case 50:
 		fullPath = m_SourcePath + "Player/Arm50Degrees.png";
 		break;
+	case 55:
 	case 60:
 		fullPath = m_SourcePath + "Player/Arm60Degrees.png";
 		break;
+	case 65:
 	case 70:
 		fullPath = m_SourcePath + "Player/Arm70Degrees.png";
 		break;
+	case 75:
 	case 80:
 		fullPath = m_SourcePath + "Player/Arm80Degrees.png";
 		break;
+	case 85:
 	case 90:
+		fullPath = m_SourcePath + "Player/Arm90Degrees.png";
+		break;
+	default: 
 		fullPath = m_SourcePath + "Player/Arm90Degrees.png";
 		break;
 	}

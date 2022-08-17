@@ -11,18 +11,19 @@
 #include "Renderer.h"
 #include "MoveCommand.h"
 #include "PlayerBulletComponent.h"
-#include "RenderSpriteComponent.h"
 #include "Scene.h"
 #include "SceneManager.h"
 #include "ShootCommand.h"
 
-PlayerControllerComponent::PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize)
+PlayerControllerComponent::PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize, unsigned int playerIdx)
 	: ControllerComponent(pLevelIndices, pLevelIndicesWalls, playerDims, playerSize)
 {
 	dae::EventQueue::GetInstance().Subscribe("KilledPlayer", this);
+	m_PlayerIndex = playerIdx;
 
 	//Get the image
 	const auto gObject = std::make_shared<dae::GameObject>();
+	m_ArmDegrees = 0;
 	gObject->AddComponent(new ArmComponent(m_Dims, m_Size, &m_ArmDegrees, &m_PreviousDirections));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 	m_ArmComponent = gObject;
@@ -40,6 +41,12 @@ void PlayerControllerComponent::SetAllEnemies(std::vector<std::shared_ptr<dae::G
 
 void PlayerControllerComponent::RotateArm(bool Clockwise)
 {
+	if (m_IsDead)
+	{
+		return;
+	}
+
+
 	if (Clockwise)
 	{
 		if (m_ArmDegrees <= 0)
@@ -47,7 +54,7 @@ void PlayerControllerComponent::RotateArm(bool Clockwise)
 			m_ArmDegrees = 360;
 		}
 
-		m_ArmDegrees -= 10;
+		m_ArmDegrees -= 5;
 	}
 	else
 	{
@@ -56,12 +63,17 @@ void PlayerControllerComponent::RotateArm(bool Clockwise)
 			m_ArmDegrees = 0;
 		}
 
-		m_ArmDegrees += 10;
+		m_ArmDegrees += 5;
 	}
 }
 
 void PlayerControllerComponent::ShootBullet()
 {
+	if (m_IsDead)
+	{
+		return;
+	}
+
 	const auto gObject = std::make_shared<dae::GameObject>();
 	gObject->AddComponent(new PlayerBulletComponent(m_pLevelIndicesWalls, m_pTanks, 10, m_Size, { sin(M_PI * (m_ArmDegrees + 90) / 180.0f), cos(M_PI * (m_ArmDegrees + 90) / 180.0f) }, { m_pOwner->GetTransform().GetPosition().x + m_pOwner->GetTransform().GetRect().width / 2, m_pOwner->GetTransform().GetPosition().y + m_pOwner->GetTransform().GetRect().height / 2 }));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
@@ -99,17 +111,17 @@ bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
 
 
-
 		m_IsDead = true;
 		dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer", this);
 	}
+
 	return false;
 }
 
 void PlayerControllerComponent::Startup()
 {
 	AddInput();
-	m_pOwner->GetTransform().SetPosition( 161,  156, 0 );
+	m_pOwner->GetTransform().SetPosition( 161,  156 + m_PlayerIndex * 100, 0 );
 	AddObserver(m_pOwner->GetComponentOfType<PlayerStateComponent>());
 	m_pOwner->GetTransform().SetRect(CalculateBox());
 }
@@ -234,17 +246,17 @@ void PlayerControllerComponent::UpdateReset()
 void PlayerControllerComponent::AddInput()
 {
 	auto& input = dae::InputManager::GetInstance();
-	input.SetCommandToKey(0, SDLK_a, new MoveCommand(this, MoveDirections::Left), dae::InputManager::InputState::Hold);
-	input.SetCommandToKey(0, SDLK_d, new MoveCommand(this, MoveDirections::Right), dae::InputManager::InputState::Hold);
-	input.SetCommandToKey(0, SDLK_s, new MoveCommand(this, MoveDirections::Down), dae::InputManager::InputState::Hold);
-	input.SetCommandToKey(0, SDLK_w, new MoveCommand(this, MoveDirections::Up), dae::InputManager::InputState::Hold);
-	input.SetCommandToKey(0, SDLK_e, new MoveArmCommand(this, true), dae::InputManager::InputState::Pressed);
-	input.SetCommandToKey(0, SDLK_q, new MoveArmCommand(this, false), dae::InputManager::InputState::Pressed);
-	input.SetCommandToKey(0, SDLK_f, new ShootCommand(this), dae::InputManager::InputState::Pressed);
+	input.SetCommandToKey(m_PlayerIndex, SDLK_a, new MoveCommand(this, MoveDirections::Left), dae::InputManager::InputState::Hold);
+	input.SetCommandToKey(m_PlayerIndex, SDLK_d, new MoveCommand(this, MoveDirections::Right), dae::InputManager::InputState::Hold);
+	input.SetCommandToKey(m_PlayerIndex, SDLK_s, new MoveCommand(this, MoveDirections::Down), dae::InputManager::InputState::Hold);
+	input.SetCommandToKey(m_PlayerIndex, SDLK_w, new MoveCommand(this, MoveDirections::Up), dae::InputManager::InputState::Hold);
+	input.SetCommandToKey(m_PlayerIndex, SDLK_e, new MoveArmCommand(this, true), dae::InputManager::InputState::Hold);
+	input.SetCommandToKey(m_PlayerIndex, SDLK_q, new MoveArmCommand(this, false), dae::InputManager::InputState::Hold);
+	input.SetCommandToKey(m_PlayerIndex, SDLK_f, new ShootCommand(this), dae::InputManager::InputState::Pressed);
 
 
-	input.SetCommandToButton(0, dae::ControllerButton::GAMEPAD_DPAD_UP, new MoveCommand(this, MoveDirections::Up), dae::InputManager::InputState::Hold);
-	input.SetCommandToButton(0, dae::ControllerButton::GAMEPAD_DPAD_LEFT, new MoveCommand(this, MoveDirections::Left), dae::InputManager::InputState::Hold);
-	input.SetCommandToButton(0, dae::ControllerButton::GAMEPAD_DPAD_RIGHT, new MoveCommand(this, MoveDirections::Right), dae::InputManager::InputState::Hold);
-	input.SetCommandToButton(0, dae::ControllerButton::GAMEPAD_DPAD_DOWN, new MoveCommand(this, MoveDirections::Down), dae::InputManager::InputState::Hold);
+	input.SetCommandToButton(m_PlayerIndex, dae::ControllerButton::GAMEPAD_DPAD_UP, new MoveCommand(this, MoveDirections::Up), dae::InputManager::InputState::Hold);
+	input.SetCommandToButton(m_PlayerIndex, dae::ControllerButton::GAMEPAD_DPAD_LEFT, new MoveCommand(this, MoveDirections::Left), dae::InputManager::InputState::Hold);
+	input.SetCommandToButton(m_PlayerIndex, dae::ControllerButton::GAMEPAD_DPAD_RIGHT, new MoveCommand(this, MoveDirections::Right), dae::InputManager::InputState::Hold);
+	input.SetCommandToButton(m_PlayerIndex, dae::ControllerButton::GAMEPAD_DPAD_DOWN, new MoveCommand(this, MoveDirections::Down), dae::InputManager::InputState::Hold);
 }

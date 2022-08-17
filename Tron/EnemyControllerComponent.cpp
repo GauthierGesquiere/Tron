@@ -15,6 +15,7 @@ EnemyControllerComponent::EnemyControllerComponent(std::vector<std::vector<glm::
 	, m_SpawnPoint{ spawnPoint }
 {
 	m_MovementSpeed = 25.0f;
+
 }
 
 void EnemyControllerComponent::SetPlayerTransform(dae::Transform* playerTransform)
@@ -27,8 +28,11 @@ void EnemyControllerComponent::SetAllEnemies(std::vector<std::shared_ptr<dae::Ga
 	m_pTanks = pTanks;
 }
 
+
 void EnemyControllerComponent::Startup()
 {
+
+
 	m_pOwner->GetTransform().SetPosition(m_SpawnPoint.x, m_SpawnPoint.y, 0);
 	AddObserver(m_pOwner->GetComponentOfType<EnemyStateComponent>());
 	m_pOwner->GetTransform().SetRect(CalculateBox());
