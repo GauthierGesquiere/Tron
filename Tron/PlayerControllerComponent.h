@@ -31,6 +31,8 @@ public:
 	void UpdateMovement(MoveDirections dir);
 	bool OnEvent(const dae::Event* event) override;
 
+	unsigned int m_PlayerIndex{};
+
 private:
 	void Startup() override;
 	void Update(float deltaSec) override;
@@ -53,7 +55,6 @@ private:
 	std::shared_ptr<dae::GameObject> m_ArmComponent{};
 	std::vector<std::shared_ptr<dae::GameObject>>* m_pTanks{};
 
-	unsigned int m_PlayerIndex{};
 };
 
 

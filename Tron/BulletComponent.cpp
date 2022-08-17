@@ -1,5 +1,7 @@
 #include "BulletComponent.h"
 
+#include <iostream>
+
 #include "EnemyControllerComponent.h"
 #include "EventQueue.h"
 #include "GameObject.h"
@@ -156,19 +158,32 @@ bool BulletComponent::CheckIfHitTank()
 		{
 			if (tank->GetComponentOfType<PlayerControllerComponent>())
 			{
-				dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
-				dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledPlayer"));
-				dae::EventQueue::GetInstance().Broadcast(new dae::Event("RestartLevel"));
-			}
+				if (tank->GetComponentOfType<PlayerControllerComponent>()->m_PlayerIndex == 0)
+				{
+					dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledPlayer0"));
+				}
+				else if(tank->GetComponentOfType<PlayerControllerComponent>()->m_PlayerIndex == 1)
+				{
+					dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledPlayer1"));
+				}
 
-			if (tank->GetComponentOfType<EnemyControllerComponent>())
-			{
-				dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
-				dae::SceneManager::GetInstance().GetActiveScene()->Remove(tank);
+				//dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
+				//dae::EventQueue::GetInstance().Broadcast(new dae::Event("RestartLevel"));
+
+				return true;
+	
 			}
+		}
+
+		if (tank->GetComponentOfType<EnemyControllerComponent>())
+		{
+			dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
+			dae::SceneManager::GetInstance().GetActiveScene()->Remove(tank);
+
 			return true;
 		}
 	}
+
 	return false;
 }
 

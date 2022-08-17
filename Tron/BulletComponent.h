@@ -12,6 +12,7 @@
 #include "EventListener.h"
 #include "utils.h"
 
+
 class BulletComponent : public dae::Component, public dae::EventListener
 {
 public:

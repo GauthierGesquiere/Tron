@@ -18,7 +18,8 @@
 PlayerControllerComponent::PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize, unsigned int playerIdx)
 	: ControllerComponent(pLevelIndices, pLevelIndicesWalls, playerDims, playerSize)
 {
-	dae::EventQueue::GetInstance().Subscribe("KilledPlayer", this);
+	dae::EventQueue::GetInstance().Subscribe("KilledPlayer0", this);
+	dae::EventQueue::GetInstance().Subscribe("KilledPlayer1", this);
 	m_PlayerIndex = playerIdx;
 
 	//Get the image
@@ -105,15 +106,29 @@ void PlayerControllerComponent::UpdateMovement(MoveDirections dir)
 
 bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 {
-	if (event->Message == "KilledPlayer")
+	//std::cout << m_PlayerIndex << std::endl;
+	if (m_PlayerIndex == 0)
 	{
-		m_ArmComponent->GetComponentOfType<ArmComponent>()->TankIsKilled();
-		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
+		if (event->Message == "KilledPlayer0")
+		{
+			m_ArmComponent->GetComponentOfType<ArmComponent>()->TankIsKilled();
+			dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
 
-
-		m_IsDead = true;
-		dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer", this);
+			m_IsDead = true;
+			dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer0", this);
+		}
 	}
+	else if (m_PlayerIndex == 1)
+	{
+		if (event->Message == "KilledPlayer1")
+		{
+			m_ArmComponent->GetComponentOfType<ArmComponent>()->TankIsKilled();
+			dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
+
+			m_IsDead = true;
+			dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer1", this);
+		}
+	}	
 
 	return false;
 }
