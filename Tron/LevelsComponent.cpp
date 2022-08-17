@@ -13,16 +13,34 @@
 #include "SceneManager.h"
 
 
-LevelsComponent::LevelsComponent(unsigned int width, unsigned int height, unsigned int level)
+LevelsComponent::LevelsComponent(Mode mode, unsigned int width, unsigned int height, unsigned int level)
 	: m_level{level}
 	, m_SourcePath{"Tron/"}
+	, m_Mode{ mode }
 {
 	m_WindowWidth = width; //- 100;
 	m_WindowHeight = height; //-100;
-	
-	LoadLevel(m_level);
-	CreatePlayers(2);
-	//CreateEnemy();
+
+	dae::EventQueue::GetInstance().Subscribe("RestartLevel", this);
+	dae::EventQueue::GetInstance().Subscribe("GameOver", this);
+
+	if (m_Mode == Mode::Singleplayer)
+	{
+		LoadLevel(m_level);
+		CreatePlayers(1);
+		CreateEnemy();
+	}
+	else if (m_Mode == Mode::Coop)
+	{
+		LoadLevel(m_level);
+		CreatePlayers(2);
+		CreateEnemy();
+	}
+	else if (m_Mode == Mode::Versus)
+	{
+		LoadLevel(m_level);
+		CreatePlayers(2);
+	}
 
 	LoadData();
 }
@@ -46,9 +64,7 @@ bool LevelsComponent::OnEvent(const dae::Event* event)
 
 void LevelsComponent::Startup()
 {
-
-	dae::EventQueue::GetInstance().Subscribe("RestartLevel", this);
-	dae::EventQueue::GetInstance().Subscribe("GameOver", this);
+	//does not work fo some reason
 }
 
 void LevelsComponent::Update(float deltaSec)

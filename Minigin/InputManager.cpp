@@ -48,6 +48,11 @@ bool dae::InputManager::ProcessInput()
 		//For every command check what states it need, and then if check if its true, if so activate that command
 		for (const auto& command : m_Commands)
 		{
+			if (m_Commands.size() <= 0)
+			{
+				return true;
+			}
+
 			if (command.first.type != InputType::XboxController)
 			{
 				continue;
@@ -92,9 +97,15 @@ bool dae::InputManager::ProcessInput()
 			return false;
 		}
 
+
 		//For every command check what states it need, and then if check if its true, if so activate that command
 		for (const auto& command : m_Commands)
 		{
+			if (m_Commands.size() <= 0)
+			{
+				return true;
+			}
+
 			if (command.first.type != InputType::KeyBoard)
 			{
 				continue;
@@ -195,7 +206,6 @@ void dae::InputManager::RemoveCommands()
 			delete command.second.pCommand;
 			command.second.pCommand = nullptr;
 		}
-
 		m_Commands.clear();
 	}
 }

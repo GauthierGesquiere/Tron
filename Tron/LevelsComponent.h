@@ -11,12 +11,18 @@
 
 #include "Component.h"
 #include "EventListener.h"
-#include "Transform.h"
+
+enum class Mode
+{
+	Singleplayer,
+	Coop,
+	Versus
+};
 
 class LevelsComponent : public dae::Component, public dae::EventListener
 {
 public:
-	LevelsComponent(unsigned int width, unsigned int height, unsigned int level = 1);
+	LevelsComponent(Mode mode, unsigned int width, unsigned int height, unsigned int level = 1);
 	~LevelsComponent() override;
 	LevelsComponent(const LevelsComponent& other) = delete;
 	LevelsComponent(LevelsComponent&& other) = delete;
@@ -61,5 +67,7 @@ private:
 	std::vector<std::shared_ptr<dae::GameObject>> m_pEnemies{};
 
 	std::vector<std::shared_ptr<dae::GameObject>> m_pTanks{};
+
+	Mode m_Mode{};
 };
 

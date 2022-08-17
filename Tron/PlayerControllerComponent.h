@@ -13,9 +13,6 @@
 #include "GameObject.h"
 #include "Subject.h"
 
-
-
-
 class PlayerControllerComponent : public ControllerComponent, public dae::Subject, public dae::EventListener
 {
 public:

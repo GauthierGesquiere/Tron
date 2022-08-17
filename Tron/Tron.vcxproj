@@ -174,10 +174,13 @@
     <ClCompile Include="LevelsComponent.cpp" />
     <ClCompile Include="MoveArmCommand.cpp" />
     <ClCompile Include="MoveCommand.cpp" />
+    <ClCompile Include="NextSceneCommand.cpp" />
     <ClCompile Include="PlayerBulletComponent.cpp" />
     <ClCompile Include="PlayerControllerComponent.cpp" />
     <ClCompile Include="PlayerStateComponent.cpp" />
+    <ClCompile Include="PlayerSelectComponent.cpp" />
     <ClCompile Include="RenderSpriteComponent.cpp" />
+    <ClCompile Include="SelectModeCommand.cpp" />
     <ClCompile Include="ShootCommand.cpp" />
     <ClCompile Include="StateComponent.cpp" />
     <ClCompile Include="Tron.cpp" />
@@ -193,10 +196,13 @@
     <ClInclude Include="LevelsComponent.h" />
     <ClInclude Include="MoveArmCommand.h" />
     <ClInclude Include="MoveCommand.h" />
+    <ClInclude Include="NextSceneCommand.h" />
     <ClInclude Include="PlayerBulletComponent.h" />
     <ClInclude Include="PlayerControllerComponent.h" />
     <ClInclude Include="PlayerStateComponent.h" />
+    <ClInclude Include="PlayerSelectComponent.h" />
     <ClInclude Include="RenderSpriteComponent.h" />
+    <ClInclude Include="SelectModeCommand.h" />
     <ClInclude Include="ShootCommand.h" />
     <ClInclude Include="StateComponent.h" />
     <ClInclude Include="TronGame.h" />

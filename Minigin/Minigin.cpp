@@ -9,7 +9,7 @@
 #include "SceneManager.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
-#include "TextObject.h"
+#include "TextRendererComponent.h"
 #include "Scene.h"
 #include "SdlMixerAudioService.h"
 #include "ServiceLocator.h"
