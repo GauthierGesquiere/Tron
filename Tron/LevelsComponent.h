@@ -35,10 +35,12 @@ private:
 	void Startup() override;
 	void Update(float deltaSec) override;
 
-	void LoadLevel(unsigned int levelIndex);
+	void CreateLevel(unsigned int levelIndex);
 	void CreatePlayers(unsigned int amount);
 	void CreateEnemy();
 	void LoadData();
+	void PickMode();
+	void GameOver();
 
 	//Dimensions
 	unsigned int m_LevelWidth{ 672 };
@@ -52,7 +54,6 @@ private:
 	unsigned int m_level{};
 
 	bool m_NeedsRestart{};
-	bool m_GameOver{};
 
 	float m_ElapsedSec{};
 
@@ -63,11 +64,16 @@ private:
 
 	glm::vec2 m_SourceToDestRatio{};
 
-	std::shared_ptr<dae::GameObject> m_pPlayer{};
+	std::vector<std::shared_ptr<dae::GameObject>> m_pPlayers{};
 	std::vector<std::shared_ptr<dae::GameObject>> m_pEnemies{};
 
 	std::vector<std::shared_ptr<dae::GameObject>> m_pTanks{};
 
 	Mode m_Mode{};
+
+	int PlayerAmount{};
+	int m_AmountOfRestarts{ 3 };
+
+	unsigned int m_Score{};
 };
 

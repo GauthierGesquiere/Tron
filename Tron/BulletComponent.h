@@ -58,5 +58,6 @@ private:
 
 	std::vector<std::shared_ptr<dae::GameObject>>* m_Tanks{};
 
+	bool m_FirstHit{true};
 };
 

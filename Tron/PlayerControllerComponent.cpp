@@ -116,6 +116,7 @@ bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 
 			m_IsDead = true;
 			dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer0", this);
+			dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer1", this);
 		}
 	}
 	else if (m_PlayerIndex == 1)
@@ -126,6 +127,7 @@ bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 			dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
 
 			m_IsDead = true;
+			dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer0", this);
 			dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer1", this);
 		}
 	}	
@@ -136,7 +138,7 @@ bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 void PlayerControllerComponent::Startup()
 {
 	AddInput();
-	m_pOwner->GetTransform().SetPosition( 161,  156 + m_PlayerIndex * 100, 0 );
+	m_pOwner->GetTransform().SetPosition( 161,  156 + m_PlayerIndex * 10, 0 );
 	AddObserver(m_pOwner->GetComponentOfType<PlayerStateComponent>());
 	m_pOwner->GetTransform().SetRect(CalculateBox());
 }

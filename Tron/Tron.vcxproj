@@ -171,6 +171,7 @@
     <ClCompile Include="EnemyBulletComponent.cpp" />
     <ClCompile Include="EnemyControllerComponent.cpp" />
     <ClCompile Include="EnemyStateComponent.cpp" />
+    <ClCompile Include="GameOverComponent.cpp" />
     <ClCompile Include="LevelsComponent.cpp" />
     <ClCompile Include="MoveArmCommand.cpp" />
     <ClCompile Include="MoveCommand.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="EnemyBulletComponent.h" />
     <ClInclude Include="EnemyControllerComponent.h" />
     <ClInclude Include="EnemyStateComponent.h" />
+    <ClInclude Include="GameOverComponent.h" />
     <ClInclude Include="LevelsComponent.h" />
     <ClInclude Include="MoveArmCommand.h" />
     <ClInclude Include="MoveCommand.h" />

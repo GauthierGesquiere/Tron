@@ -5,6 +5,7 @@
 #include "EnemyStateComponent.h"
 #include "EventQueue.h"
 #include "GameObject.h"
+#include "GameOverComponent.h"
 #include "PlayerControllerComponent.h"
 #include "PlayerStateComponent.h"
 #include "RenderSpriteComponent.h"
@@ -22,25 +23,10 @@ LevelsComponent::LevelsComponent(Mode mode, unsigned int width, unsigned int hei
 	m_WindowHeight = height; //-100;
 
 	dae::EventQueue::GetInstance().Subscribe("RestartLevel", this);
-	dae::EventQueue::GetInstance().Subscribe("GameOver", this);
+	dae::EventQueue::GetInstance().Subscribe("KilledPlayer0", this);
+	dae::EventQueue::GetInstance().Subscribe("KilledPlayer1", this);
 
-	if (m_Mode == Mode::Singleplayer)
-	{
-		LoadLevel(m_level);
-		CreatePlayers(1);
-		CreateEnemy();
-	}
-	else if (m_Mode == Mode::Coop)
-	{
-		LoadLevel(m_level);
-		CreatePlayers(2);
-		CreateEnemy();
-	}
-	else if (m_Mode == Mode::Versus)
-	{
-		LoadLevel(m_level);
-		CreatePlayers(2);
-	}
+	PickMode();
 
 	LoadData();
 }
@@ -55,16 +41,34 @@ bool LevelsComponent::OnEvent(const dae::Event* event)
 	{
 		m_NeedsRestart = true;
 	}
-	if (event->Message == "GameOver")
+	if (event->Message == "KilledPlayer0")
 	{
-		m_GameOver = true;
+		PlayerAmount--;
+		if (m_Mode == Mode::Versus)
+		{
+			PlayerAmount--;
+		}
 	}
+	if (event->Message == "KilledPlayer1")
+	{
+		PlayerAmount--;
+		if (m_Mode == Mode::Versus)
+		{
+			PlayerAmount--;
+		}
+	}
+
+	if (PlayerAmount <= 0)
+	{
+		m_NeedsRestart = true;
+	}
+
 	return false;
 }
 
 void LevelsComponent::Startup()
 {
-	//does not work fo some reason
+	
 }
 
 void LevelsComponent::Update(float deltaSec)
@@ -75,14 +79,19 @@ void LevelsComponent::Update(float deltaSec)
 		if (m_ElapsedSec >= 2.8)
 		{
 			dae::EventQueue::GetInstance().Broadcast(new dae::Event("ClearAllBullets"));
-
 		}
 		if (m_ElapsedSec >= 3)
 		{
+			m_AmountOfRestarts--;
+
 			m_ElapsedSec = 0;
 			m_NeedsRestart = false;
 
-
+			if (m_AmountOfRestarts <= 0)
+			{
+				GameOver();
+				return;
+			}
 
 			for (auto enemy : m_pEnemies)
 			{
@@ -96,18 +105,19 @@ void LevelsComponent::Update(float deltaSec)
 			}
 			m_pTanks.clear();
 
-			dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pPlayer);
-			//m_pPlayer.reset();
+			for (auto &player : m_pPlayers)
+			{
+				dae::SceneManager::GetInstance().GetActiveScene()->Remove(player);
+			}
 
+			m_pPlayers.clear();
 
-			CreatePlayers(1);
-			//CreateEnemy();
-			//CreateEnemy();
+			PickMode();
 		}
 	}
 }
 
-void LevelsComponent::LoadLevel(unsigned levelIndex)
+void LevelsComponent::CreateLevel(unsigned levelIndex)
 {
 	//Get the image
 	std::string fullPath{ "Levels/Level" };
@@ -140,7 +150,7 @@ void LevelsComponent::CreatePlayers(unsigned amount)
 		dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 		m_pTanks.push_back(gObject);
 		gObject->GetComponentOfType<PlayerControllerComponent>()->SetAllEnemies(&m_pTanks);
-		m_pPlayer = gObject;
+		m_pPlayers.push_back(gObject);
 	}
 }
 
@@ -169,7 +179,7 @@ void LevelsComponent::CreateEnemy()
 	//spawnPoint = { 0, -10.f };
 	gObject->AddComponent(new EnemyControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio, spawnPoint));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
-	gObject->GetComponentOfType<EnemyControllerComponent>()->SetPlayerTransform(&m_pPlayer->GetTransform());
+	gObject->GetComponentOfType<EnemyControllerComponent>()->SetPlayerTransform(m_pPlayers);
 	gObject->GetComponentOfType<EnemyControllerComponent>()->SetAllEnemies(&m_pTanks);
 	m_pEnemies.push_back(gObject);
 	m_pTanks.push_back(gObject);
@@ -178,5 +188,44 @@ void LevelsComponent::CreateEnemy()
 void LevelsComponent::LoadData()
 {
 	
+}
+
+void LevelsComponent::PickMode()
+{
+	if (m_Mode == Mode::Singleplayer)
+	{
+		PlayerAmount = 1;
+		CreateLevel(m_level);
+		CreatePlayers(PlayerAmount);
+		CreateEnemy();
+	}
+	else if (m_Mode == Mode::Coop)
+	{
+		PlayerAmount = 2;
+		CreateLevel(m_level);
+		CreatePlayers(PlayerAmount);
+		CreateEnemy();
+	}
+	else if (m_Mode == Mode::Versus)
+	{
+		PlayerAmount = 2;
+		CreateLevel(m_level);
+		CreatePlayers(PlayerAmount);
+	}
+}
+
+void LevelsComponent::GameOver()
+{
+	//Make Scene
+	std::string sceneName = "GameOverScreen";
+	dae::Scene& gameScene = dae::SceneManager::GetInstance().CreateScene(sceneName);
+	dae::SceneManager::GetInstance().SetSceneAsActive(sceneName);
+
+
+	const auto gObject = std::make_shared<dae::GameObject>();
+	//const auto playerSelect = new PlayerSelectComponent(m_WindowWidth, m_WindowHeight);
+	const auto gameOverComponent = new GameOverComponent(m_Mode, m_WindowWidth, m_WindowHeight, 2);
+	gObject->AddComponent(gameOverComponent);
+	gameScene.Add(gObject);
 }
 

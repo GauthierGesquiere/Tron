@@ -18,14 +18,27 @@ EnemyControllerComponent::EnemyControllerComponent(std::vector<std::vector<glm::
 
 }
 
-void EnemyControllerComponent::SetPlayerTransform(dae::Transform* playerTransform)
+void EnemyControllerComponent::SetPlayerTransform(std::vector<std::shared_ptr<dae::GameObject>> players)
 {
-	m_pPlayerTransform = playerTransform;
+	for (const auto transform : players)
+	{
+		m_pPlayerTransforms.push_back(&transform->GetTransform());
+	}
 }
 
 void EnemyControllerComponent::SetAllEnemies(std::vector<std::shared_ptr<dae::GameObject>>* pTanks)
 {
 	m_pTanks = pTanks;
+}
+
+void EnemyControllerComponent::IsHit()
+{
+	m_Health--;
+
+	if (m_Health <= 0)
+	{
+		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
+	}
 }
 
 
@@ -61,6 +74,7 @@ void EnemyControllerComponent::Startup()
 
 void EnemyControllerComponent::Update(float deltaSec)
 {
+
 
 	HitHorizontal();
 	HitVertical();
@@ -100,7 +114,7 @@ void EnemyControllerComponent::UpdateLeft()
 	}
 	else
 	{
-		std::cout << "left" << std::endl;
+		//std::cout << "left" << std::endl;
 	}
 }
 
@@ -113,7 +127,7 @@ void EnemyControllerComponent::UpdateRight()
 	}
 	else
 	{
-		std::cout << "right" << std::endl;
+		//std::cout << "right" << std::endl;
 	}
 }
 
@@ -126,7 +140,7 @@ void EnemyControllerComponent::UpdateDown()
 	}
 	else
 	{
-		std::cout << "down" << std::endl;
+		//std::cout << "down" << std::endl;
 	}
 }
 
@@ -139,7 +153,7 @@ void EnemyControllerComponent::UpdateUp()
 	}
 	else
 	{
-		std::cout << "up" << std::endl;
+		//std::cout << "up" << std::endl;
 	}
 }
 
@@ -361,44 +375,52 @@ void EnemyControllerComponent::CheckIfNeedsToShootBullet(float deltaSec)
 		}
 	}
 
-	const int x = m_pPlayerTransform->GetPosition().x - m_pOwner->GetTransform().GetPosition().x;
-	const int y = m_pPlayerTransform->GetPosition().y - m_pOwner->GetTransform().GetPosition().y;
-
-
-	if (abs(x) <= 5)
+	for (int i = 0; i < m_pPlayerTransforms.size(); i++)
 	{
-		if (y > 0)
+		if (m_JustShot)
 		{
-			if (m_NeededUpdate == NeedUpdate::Down)
+			return;
+		}
+
+		const int x = m_pPlayerTransforms[i]->GetPosition().x - m_pOwner->GetTransform().GetPosition().x;
+		const int y = m_pPlayerTransforms[i]->GetPosition().y - m_pOwner->GetTransform().GetPosition().y;
+
+
+
+		if (abs(x) <= 5)
+		{
+			if (y > 0)
 			{
-				ShootBullet();
+				if (m_NeededUpdate == NeedUpdate::Down)
+				{
+					ShootBullet();
+				}
+			}
+			else
+			{
+				if (m_NeededUpdate == NeedUpdate::Up)
+				{
+					ShootBullet();
+				}
 			}
 		}
-		else
+
+		if (abs(y) <= 5)
 		{
-			if (m_NeededUpdate == NeedUpdate::Up)
+			if (x > 0)
 			{
-				ShootBullet();
+				if (m_NeededUpdate == NeedUpdate::Right)
+				{
+					ShootBullet();
+				}
+			}
+			else
+			{
+				if (m_NeededUpdate == NeedUpdate::Left)
+				{
+					ShootBullet();
+				}
 			}
 		}
 	}
-
-	if (abs(y) <= 5)
-	{
-		if (x > 0)
-		{
-			if (m_NeededUpdate == NeedUpdate::Right)
-			{
-				ShootBullet();
-			}
-		}
-		else
-		{
-			if (m_NeededUpdate == NeedUpdate::Left)
-			{
-				ShootBullet();
-			}
-		}
-	}
-
 }

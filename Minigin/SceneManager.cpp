@@ -63,3 +63,18 @@ void dae::SceneManager::SetSceneAsActive(std::shared_ptr<dae::Scene> scene)
 {
 	m_ActiveScene = scene;
 }
+
+void dae::SceneManager::RemoveScene(const std::string& name)
+{
+	int i{0};
+	for (const auto scene : m_Scenes)
+	{
+		if (scene == GetScene(name))
+		{
+			return;
+		}
+		i++;
+	}
+
+	m_Scenes.erase(m_Scenes.begin() + i);
+}

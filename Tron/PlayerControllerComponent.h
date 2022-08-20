@@ -54,7 +54,6 @@ private:
 
 	std::shared_ptr<dae::GameObject> m_ArmComponent{};
 	std::vector<std::shared_ptr<dae::GameObject>>* m_pTanks{};
-
 };
 
 

@@ -78,7 +78,7 @@ void BulletComponent::Update(float deltaSec)
 	}
 
 	m_ElapsedSec += deltaSec;
-	if (m_ElapsedSec >= 1.5f)
+	if (m_ElapsedSec >= 1.6f && m_FirstHit == true)
 	{
 		CheckIfHitTank();
 	}
@@ -167,21 +167,31 @@ bool BulletComponent::CheckIfHitTank()
 					dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledPlayer1"));
 				}
 
-				//dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
-				//dae::EventQueue::GetInstance().Broadcast(new dae::Event("RestartLevel"));
+				dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
+				dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_RenderObj);
+				dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
+
+				m_FirstHit = false;
 
 				return true;
 	
 			}
+
+			if (tank->GetComponentOfType<EnemyControllerComponent>())
+			{
+				dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
+				tank->GetComponentOfType<EnemyControllerComponent>()->IsHit();
+				//dae::SceneManager::GetInstance().GetActiveScene()->Remove(tank);
+
+				dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_RenderObj);
+				dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
+
+				m_FirstHit = false;
+
+				return true;
+			}
 		}
 
-		if (tank->GetComponentOfType<EnemyControllerComponent>())
-		{
-			dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
-			dae::SceneManager::GetInstance().GetActiveScene()->Remove(tank);
-
-			return true;
-		}
 	}
 
 	return false;

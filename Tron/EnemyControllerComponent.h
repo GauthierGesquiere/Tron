@@ -26,8 +26,9 @@ public:
 	EnemyControllerComponent& operator=(const EnemyControllerComponent& other) = delete;
 	EnemyControllerComponent& operator=(EnemyControllerComponent&& other) = delete;
 
-	void SetPlayerTransform(dae::Transform* playerTransform);
+	void SetPlayerTransform(std::vector<std::shared_ptr<dae::GameObject>> players);
 	void SetAllEnemies(std::vector<std::shared_ptr<dae::GameObject>>* pEnemies);
+	void IsHit();
 
 	bool m_IsInitialized{};
 
@@ -44,7 +45,7 @@ private:
 	void ShootBullet();
 	void CheckIfNeedsToShootBullet(float deltaSec);
 
-	dae::Transform* m_pPlayerTransform{};
+	std::vector<dae::Transform*> m_pPlayerTransforms{};
 
 	enum class NeedUpdate
 	{
@@ -66,6 +67,8 @@ private:
 	std::vector<std::shared_ptr<dae::GameObject>>* m_pTanks{};
 
 	glm::vec2 m_SpawnPoint{};
+
+	int m_Health{3};
 };
 
 

@@ -111,7 +111,7 @@ void PlayerSelectComponent::StartGame()
 	input.RemoveCommands();
 
 	//Make Scene
-	std::string sceneName = "SelectMode";
+	std::string sceneName = "Game";
 	dae::Scene& gameScene = dae::SceneManager::GetInstance().CreateScene(sceneName);
 	dae::SceneManager::GetInstance().SetSceneAsActive(sceneName);
 
@@ -121,6 +121,9 @@ void PlayerSelectComponent::StartGame()
 	const auto levelsComponent = new LevelsComponent(m_CurrentMode, m_WindowWidth, m_WindowHeight);
 	gObject->AddComponent(levelsComponent);
 	gameScene.Add(gObject);
+
+	sceneName = "SelectMode";
+	dae::SceneManager::GetInstance().RemoveScene(sceneName);
 }
 
 void PlayerSelectComponent::AddInput()
