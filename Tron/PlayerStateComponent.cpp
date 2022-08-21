@@ -8,9 +8,10 @@
 #include "GameObject.h"
 #include "RenderSpriteComponent.h"
 
-PlayerStateComponent::PlayerStateComponent(unsigned displayWidth, unsigned displayHeight, unsigned int playerDims, glm::vec2 playerSize)
+PlayerStateComponent::PlayerStateComponent(unsigned displayWidth, unsigned displayHeight, unsigned int playerDims, glm::vec2 playerSize, int playerIdx)
 	: StateComponent(displayWidth, displayHeight, playerDims, playerSize)
 {
+	m_PlayerIdx = playerIdx;
 }
 
 PlayerStateComponent::~PlayerStateComponent()
@@ -21,7 +22,8 @@ void PlayerStateComponent::Startup()
 {
 	if (const auto renderer = m_pOwner->GetComponentOfType<RenderSpriteComponent>())
 	{
-		const std::string fullPath{ "LeftRight.png" };
+		std::string fullPath{ "LeftRight" };
+		fullPath += std::to_string(m_PlayerIdx) + ".png";
 
 		renderer->SetTextureToDraw(m_SourcePath + fullPath, m_PlayerDims, m_PlayerDims, 0.5f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::ForwardReverseLoop, -1, m_MirrorHorizontally);
 		renderer->SetFreeze(2);
@@ -144,7 +146,9 @@ void PlayerStateComponent::IsDrivingHorizontal(float /*deltaSec*/)
 		if (m_PreviousState != m_CurrentState)
 		{
 			m_PreviousState = m_CurrentState;
-			const std::string fullPath{ "LeftRight.png" };
+			std::string fullPath{ "LeftRight" };
+
+			fullPath += std::to_string(m_PlayerIdx) + ".png";
 
 			renderer->SetTextureToDraw(m_SourcePath + fullPath, m_PlayerDims, m_PlayerDims, 0.5f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::ForwardReverseLoop, -1, m_MirrorHorizontally);
 		}
@@ -159,7 +163,9 @@ void PlayerStateComponent::IsDrivingVertical(float /*deltaSec*/)
 		if (m_PreviousState != m_CurrentState)
 		{
 			m_PreviousState = m_CurrentState;
-			const std::string fullPath{ "UpDown.png" };
+			std::string fullPath{ "UpDown" };
+
+			fullPath += std::to_string(m_PlayerIdx) + ".png";
 
 			renderer->SetTextureToDraw(m_SourcePath + fullPath, m_PlayerDims, m_PlayerDims, 0.5f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::ForwardReverseLoop, -1, m_MirrorHorizontally, m_MirrorVertically);
 		}

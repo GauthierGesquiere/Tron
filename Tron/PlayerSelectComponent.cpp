@@ -118,7 +118,7 @@ void PlayerSelectComponent::StartGame()
 
 	const auto gObject = std::make_shared<dae::GameObject>();
 	//const auto playerSelect = new PlayerSelectComponent(m_WindowWidth, m_WindowHeight);
-	const auto levelsComponent = new LevelsComponent(m_CurrentMode, m_WindowWidth, m_WindowHeight);
+	const auto levelsComponent = new LevelsComponent(m_CurrentMode, m_WindowWidth, m_WindowHeight, 3);
 	gObject->AddComponent(levelsComponent);
 	gameScene.Add(gObject);
 

@@ -8,6 +8,15 @@ EnemyStateComponent::EnemyStateComponent(unsigned displayWidth, unsigned display
 	, m_EnemyType{ type }
 {
 	m_SourcePath = "Tron/Enemies/";
+
+	if (m_EnemyType == EnemyType::Tank)
+	{
+		m_ImageIdx = 0;
+	}
+	else
+	{
+		m_ImageIdx = 1;
+	}
 }
 
 void EnemyStateComponent::Startup()
@@ -16,7 +25,11 @@ void EnemyStateComponent::Startup()
 
 	if (const auto renderer = m_pOwner->GetComponentOfType<RenderSpriteComponent>())
 	{
-		renderer->SetTextureToDraw(m_SourcePath + "DrivingHorizontal.png", m_PlayerDims, m_PlayerDims, 0.5f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::ForwardReverseLoop, -1, m_MirrorHorizontally);
+		std::string fullPath{ "DrivingHorizontal" };
+
+		fullPath += std::to_string(m_ImageIdx) + ".png";
+
+		renderer->SetTextureToDraw(m_SourcePath + fullPath, m_PlayerDims, m_PlayerDims, 0.5f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::ForwardReverseLoop, -1, m_MirrorHorizontally);
 		renderer->SetFreeze(2);
 	}
 }
@@ -103,7 +116,9 @@ void EnemyStateComponent::IsGoingUp(float /*deltaSec*/)
 		if (m_PreviousState != m_CurrentState)
 		{
 			m_PreviousState = m_CurrentState;
-			const std::string fullPath{ "DrivingVertical.png" };
+
+			std::string fullPath{ "DrivingVertical" };
+			fullPath += std::to_string(m_ImageIdx) + ".png";
 
 			renderer->SetTextureToDraw(m_SourcePath + fullPath, m_PlayerDims, m_PlayerDims, 0.5f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::ForwardReverseLoop, -1, m_MirrorHorizontally, m_MirrorVertically);
 		}
@@ -117,7 +132,9 @@ void EnemyStateComponent::IsGoingRight(float /*deltaSec*/)
 		if (m_PreviousState != m_CurrentState)
 		{
 			m_PreviousState = m_CurrentState;
-			const std::string fullPath{ "DrivingHorizontal.png" };
+
+			std::string fullPath{ "DrivingHorizontal" };
+			fullPath += std::to_string(m_ImageIdx) + ".png";
 
 			renderer->SetTextureToDraw(m_SourcePath + fullPath, m_PlayerDims, m_PlayerDims, 0.5f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::ForwardReverseLoop, -1, m_MirrorHorizontally, m_MirrorVertically);
 		}

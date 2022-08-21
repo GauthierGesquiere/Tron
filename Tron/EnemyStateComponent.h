@@ -36,5 +36,6 @@ private:
 	void IsDying(float deltaSec);
 
 	EnemyType m_EnemyType{};
+	int m_ImageIdx{};
 };
 

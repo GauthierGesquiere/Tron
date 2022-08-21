@@ -10,11 +10,19 @@
 #include "Scene.h"
 #include "SceneManager.h"
 
-EnemyControllerComponent::EnemyControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned enemyDims, glm::vec2 enemySize, glm::vec2 spawnPoint)
+EnemyControllerComponent::EnemyControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned enemyDims, glm::vec2 enemySize, glm::vec2 spawnPoint, EnemyType type)
 	: ControllerComponent(pLevelIndices, pLevelIndicesWalls, enemyDims, enemySize)
 	, m_SpawnPoint{ spawnPoint }
+	, m_Type { type }
 {
-	m_MovementSpeed = 25.0f;
+	if (m_Type == EnemyType::Tank)
+	{
+		m_MovementSpeed = 25.0f;
+	}
+	else
+	{
+		m_MovementSpeed = 40.0f;
+	}
 
 }
 
@@ -37,6 +45,7 @@ void EnemyControllerComponent::IsHit()
 
 	if (m_Health <= 0)
 	{
+		dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledEnemy"));
 		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
 	}
 }
@@ -44,8 +53,6 @@ void EnemyControllerComponent::IsHit()
 
 void EnemyControllerComponent::Startup()
 {
-
-
 	m_pOwner->GetTransform().SetPosition(m_SpawnPoint.x, m_SpawnPoint.y, 0);
 	AddObserver(m_pOwner->GetComponentOfType<EnemyStateComponent>());
 	m_pOwner->GetTransform().SetRect(CalculateBox());
@@ -98,7 +105,10 @@ void EnemyControllerComponent::Update(float deltaSec)
 	}
 
 	UpdateAILogic(deltaSec);
-	CheckIfNeedsToShootBullet(deltaSec);
+	if (m_Type == EnemyType::Tank)
+	{
+		CheckIfNeedsToShootBullet(deltaSec);
+	}
 	TranslateSprite(deltaSec);
 
 	m_Velocity.x = 0.0f;

@@ -138,7 +138,7 @@ bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 void PlayerControllerComponent::Startup()
 {
 	AddInput();
-	m_pOwner->GetTransform().SetPosition( 161,  156 + m_PlayerIndex * 10, 0 );
+	m_pOwner->GetTransform().SetPosition( 170,  156 + m_PlayerIndex * 10, 0 );
 	AddObserver(m_pOwner->GetComponentOfType<PlayerStateComponent>());
 	m_pOwner->GetTransform().SetRect(CalculateBox());
 }

@@ -41,7 +41,9 @@ private:
 	void LoadData();
 	void PickMode();
 	void GameOver();
+	void LoadNewLevel();
 
+	void RemoveEverythingOnScene();
 	//Dimensions
 	unsigned int m_LevelWidth{ 672 };
 	unsigned int m_LevelHeight{ 654 };
@@ -54,8 +56,10 @@ private:
 	unsigned int m_level{};
 
 	bool m_NeedsRestart{};
+	bool m_NeedsToLoadNewLevel{};
 
-	float m_ElapsedSec{};
+	float m_ElapsedSecLevelRestart{};
+	float m_ElapsedSecLoadNewLevel{};
 
 	std::string m_SourcePath{};
 
@@ -73,6 +77,7 @@ private:
 
 	int PlayerAmount{};
 	int m_AmountOfRestarts{ 3 };
+	int m_EnemiesKilled{};
 
 	unsigned int m_Score{};
 };

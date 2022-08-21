@@ -11,7 +11,7 @@
 class PlayerStateComponent : public StateComponent, public dae::Observer, public dae::EventListener
 {
 public:
-	PlayerStateComponent(unsigned int displayWidth, unsigned int displayHeight, unsigned int playerDims, glm::vec2 playerSize);
+	PlayerStateComponent(unsigned int displayWidth, unsigned int displayHeight, unsigned int playerDims, glm::vec2 playerSize, int playerIdx);
 	~PlayerStateComponent() override;
 	PlayerStateComponent(const PlayerStateComponent& other) = delete;
 	PlayerStateComponent(PlayerStateComponent&& other) = delete;
@@ -32,6 +32,8 @@ private:
 	void IsIdle(float deltaSec);
 
 	bool m_IsDead{};
+
+	int m_PlayerIdx{};
 };
 
 

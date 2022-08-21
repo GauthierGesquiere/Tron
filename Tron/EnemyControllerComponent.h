@@ -10,6 +10,7 @@
 #include <memory>
 #include <glm/glm.hpp>
 
+#include "EnemyStateComponent.h"
 #include "EventListener.h"
 
 
@@ -19,7 +20,7 @@
 class EnemyControllerComponent : public ControllerComponent, public dae::Subject
 {
 public:
-	EnemyControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int enemyDims, glm::vec2 enemySize, glm::vec2 spawnPoint);
+	EnemyControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int enemyDims, glm::vec2 enemySize, glm::vec2 spawnPoint, EnemyType type);
 	~EnemyControllerComponent() override = default;
 	EnemyControllerComponent(const EnemyControllerComponent& other) = delete;
 	EnemyControllerComponent(EnemyControllerComponent&& other) = delete;
@@ -69,6 +70,8 @@ private:
 	glm::vec2 m_SpawnPoint{};
 
 	int m_Health{3};
+
+	EnemyType m_Type{};
 };
 
 
