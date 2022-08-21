@@ -85,7 +85,7 @@ bool LevelsComponent::OnEvent(const dae::Event* event)
 	{
 		m_EnemiesKilled++;
 
-		if (m_EnemiesKilled >= m_pEnemies.size())
+		if (m_EnemiesKilled >= static_cast<int>(m_pEnemies.size()))
 		{
 			m_NeedsToLoadNewLevel = true;
 		}

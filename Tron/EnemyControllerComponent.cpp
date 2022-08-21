@@ -408,7 +408,7 @@ void EnemyControllerComponent::CheckIfNeedsToShootBullet(float deltaSec)
 		}
 	}
 
-	for (int i = 0; i < m_pPlayerTransforms.size(); i++)
+	for (int i = 0; i < static_cast<int>(m_pPlayerTransforms.size()); i++)
 	{
 		if (m_JustShot)
 		{
