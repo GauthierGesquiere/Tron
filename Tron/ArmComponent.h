@@ -39,5 +39,7 @@ private:
 	bool m_FlipVertically{ false };
 
 	const MoveDirections* m_MoveDirection{};
+
+	float m_elapsedSec{};
 };
 

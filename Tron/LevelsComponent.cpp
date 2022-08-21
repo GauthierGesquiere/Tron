@@ -1,4 +1,7 @@
 #include "LevelsComponent.h"
+
+#include <fstream>
+#include <iostream>
 #include <memory>
 
 #include "EnemyControllerComponent.h"
@@ -106,7 +109,6 @@ void LevelsComponent::Update(float deltaSec)
 
 		if (m_ElapsedSecLevelRestart >= 3)
 		{
-			dae::EventQueue::GetInstance().Broadcast(new dae::Event("ClearAllBullets"));
 			m_AmountOfRestarts--;
 
 			m_ElapsedSecLevelRestart = 0;
@@ -127,6 +129,9 @@ void LevelsComponent::Update(float deltaSec)
 
 void LevelsComponent::CreateLevel(unsigned levelIndex)
 {
+	m_LevelVertices.clear();
+	m_pLevelIndicesWalls.clear();
+
 	//Get the image
 	std::string fullPath{ "Levels/Level" };
 	fullPath += std::to_string(levelIndex) + ".png";
@@ -136,6 +141,7 @@ void LevelsComponent::CreateLevel(unsigned levelIndex)
 	//gObject->GetComponentOfType<RenderSpriteComponent>()->SetPosition(glm::vec2{ 500.f, 500.f });
 	m_SourceToDestRatio = gObject->GetComponentOfType<RenderSpriteComponent>()->GetSourceToDestRatio();
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
+
 
 	//Parse the svg file
 	fullPath = "Levels/Level" + std::to_string(levelIndex) + ".svg";
@@ -147,14 +153,85 @@ void LevelsComponent::CreateLevel(unsigned levelIndex)
 
 }
 
+glm::vec2 LevelsComponent::ToPoint2f(const std::string& pos1)
+{
+	glm::vec2 point;
+
+	std::string x, y;
+	int value{ 0 };
+
+	for (unsigned int i = 0; i < pos1.size(); i++)
+	{
+		if (pos1[i] == ',')
+		{
+			i++;
+			value++;
+		}
+		if (value < 1)
+			x += pos1[i];
+		else if (value < 2)
+			y += pos1[i];
+	}
+	point.x = std::stof(x);
+	point.y = std::stof(y);
+
+	return point;
+}
+
+glm::vec2 LevelsComponent::GetRandomPos()
+{
+	std::ifstream file{ "SpawnPoints.txt" };
+
+	glm::vec2 randPos;
+
+	while (std::getline(file, m_SpawnPoints, '/'))
+	{
+		if (m_SpawnPoints.find("Level" + std::to_string(m_level)) != std::string::npos && "Level" + std::to_string(m_level) == ("Level" + std::to_string(m_level)))
+		{
+			std::string pos1;
+			std::string pos2;
+			int randNr{ rand() % 8 + 1 };
+			int posFound = int(m_SpawnPoints.find(std::to_string(randNr) + "."));
+			int value{ 0 };
+
+			for (unsigned int i = posFound; i < m_SpawnPoints.size(); i++)
+			{
+				if (m_SpawnPoints[i] == '"')
+				{
+					i++;
+					value++;
+				}
+
+				if (value == 1)
+					pos1 += m_SpawnPoints[i];
+				else if (value == 3)
+					pos2 += m_SpawnPoints[i];
+				else if (value == 4)
+					break;
+			}
+
+			glm::vec2 firstPoint{ ToPoint2f(pos1) };
+			glm::vec2 lastPoint{ ToPoint2f(pos2) };
+
+			float distance{ lastPoint.x - firstPoint.x };
+
+			randPos.x = rand() % int(distance) + firstPoint.x;
+			randPos.y = firstPoint.y;
+			return randPos;
+		}
+	}
+}
+
 void LevelsComponent::CreatePlayers(unsigned amount)
 {
 	for (unsigned int i = 0; i < amount; ++i)
 	{
+		glm::vec2 randPos = GetRandomPos();
+
 		const auto gObject = std::make_shared<dae::GameObject>();
 		gObject->AddComponent(new RenderSpriteComponent());
 		gObject->AddComponent(new PlayerStateComponent(m_WindowWidth, m_WindowHeight, m_PlayerDims, m_SourceToDestRatio, i));
-		gObject->AddComponent(new PlayerControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio, i));
+		gObject->AddComponent(new PlayerControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio, i, randPos));
 		dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 		m_pTanks.push_back(gObject);
 		gObject->GetComponentOfType<PlayerControllerComponent>()->SetAllEnemies(&m_pTanks);
@@ -164,33 +241,33 @@ void LevelsComponent::CreatePlayers(unsigned amount)
 
 void LevelsComponent::CreateEnemy()
 {
-	const auto gObject = std::make_shared<dae::GameObject>();
-	gObject->AddComponent(new RenderSpriteComponent());
-	int randInt = rand() % 10;
-
-	EnemyType type;
-	/*if (randInt > 8)
+	for (unsigned int i = 0; i < m_level + 20; ++i)
 	{
-		type = EnemyType::Tank;
+		glm::vec2 randPos = GetRandomPos();
+
+		const auto gObject = std::make_shared<dae::GameObject>();
+		gObject->AddComponent(new RenderSpriteComponent());
+		int randInt = rand() % 10;
+
+		EnemyType type;
+		//if (randInt < 8)
+		//{
+		//	type = EnemyType::Tank;
+		//}
+		//else
+		{
+			type = EnemyType::Recognizer;
+		}
+
+		gObject->AddComponent(new EnemyStateComponent(m_WindowWidth, m_WindowHeight, m_PlayerDims, m_SourceToDestRatio, type));
+
+		gObject->AddComponent(new EnemyControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio, randPos, type));
+		dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
+		gObject->GetComponentOfType<EnemyControllerComponent>()->SetPlayerTransform(m_pPlayers);
+		gObject->GetComponentOfType<EnemyControllerComponent>()->SetAllEnemies(&m_pTanks);
+		m_pEnemies.push_back(gObject);
+		m_pTanks.push_back(gObject);
 	}
-	else*/
-	{
-		type = EnemyType::Recognizer;
-	}
-
-	gObject->AddComponent(new EnemyStateComponent(m_WindowWidth, m_WindowHeight, m_PlayerDims, m_SourceToDestRatio, type));
-
-	glm::vec2 spawnPoint{};
-	spawnPoint = { 170,  356 };
-
-
-	//spawnPoint = { 0, -10.f };
-	gObject->AddComponent(new EnemyControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio, spawnPoint, type));
-	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
-	gObject->GetComponentOfType<EnemyControllerComponent>()->SetPlayerTransform(m_pPlayers);
-	gObject->GetComponentOfType<EnemyControllerComponent>()->SetAllEnemies(&m_pTanks);
-	m_pEnemies.push_back(gObject);
-	m_pTanks.push_back(gObject);
 }
 
 void LevelsComponent::LoadData()
@@ -244,11 +321,17 @@ void LevelsComponent::LoadNewLevel()
 {
 	RemoveEverythingOnScene();
 	m_level++;
+	if (m_level > 3)
+	{
+		m_level = 1;
+	}
 	PickMode();
 }
 
 void LevelsComponent::RemoveEverythingOnScene()
 {
+	dae::EventQueue::GetInstance().Broadcast(new dae::Event("ClearAllBullets"));
+
 	for (auto enemy : m_pEnemies)
 	{
 		dae::SceneManager::GetInstance().GetActiveScene()->Remove(enemy);

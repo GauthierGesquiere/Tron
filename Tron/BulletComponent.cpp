@@ -66,7 +66,7 @@ void BulletComponent::Update(float deltaSec)
 	if (HitWall)
 	{
 		m_ElapsedSecWall += deltaSec;
-		if (m_ElapsedSecWall >= 0.1f)
+		if (m_ElapsedSecWall >= 0.2f)
 		{
 			HitWall = false;
 			m_ElapsedSecWall = 0.0f;
@@ -160,11 +160,11 @@ bool BulletComponent::CheckIfHitTank()
 			{
 				if (tank->GetComponentOfType<PlayerControllerComponent>()->m_PlayerIndex == 0)
 				{
-					dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledPlayer0"));
+					dae::EventQueue::GetInstance().Broadcast(new dae::Event("HitPlayer0"));
 				}
 				else if(tank->GetComponentOfType<PlayerControllerComponent>()->m_PlayerIndex == 1)
 				{
-					dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledPlayer1"));
+					dae::EventQueue::GetInstance().Broadcast(new dae::Event("HitPlayer1"));
 				}
 
 				dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);

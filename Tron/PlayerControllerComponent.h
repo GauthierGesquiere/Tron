@@ -16,7 +16,7 @@
 class PlayerControllerComponent : public ControllerComponent, public dae::Subject, public dae::EventListener
 {
 public:
-	PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize, unsigned int playerIdx);
+	PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize, unsigned int playerIdx, glm::vec2 spawnPoint);
 	//PlayerControllerComponent() = default;
 	~PlayerControllerComponent() override;
 	PlayerControllerComponent(const PlayerControllerComponent& other) = delete;
@@ -54,6 +54,13 @@ private:
 
 	std::shared_ptr<dae::GameObject> m_ArmComponent{};
 	std::vector<std::shared_ptr<dae::GameObject>>* m_pTanks{};
+
+	bool m_CanShoot{};
+	float m_ElapsedSecShooting{};
+	float m_ElapsedSecInvulnerability{};
+
+	glm::vec2 m_SpawnPoint{};
+	bool m_CanDie{};
 };
 
 

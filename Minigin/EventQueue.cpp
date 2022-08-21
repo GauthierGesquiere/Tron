@@ -65,6 +65,7 @@ void dae::EventQueue::HandleEventQueue()
 
 		for (EventListener* listener : m_Listeners[pEvent->Message])
 		{
+			//std::cout << pEvent->Message << std::endl;
 			listener->OnEvent(pEvent);
 		}
 

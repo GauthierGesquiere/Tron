@@ -7,6 +7,7 @@
 #include "EnemyStateComponent.h"
 #include "EventQueue.h"
 #include "GameObject.h"
+#include "PlayerControllerComponent.h"
 #include "Scene.h"
 #include "SceneManager.h"
 
@@ -32,11 +33,13 @@ void EnemyControllerComponent::SetPlayerTransform(std::vector<std::shared_ptr<da
 	{
 		m_pPlayerTransforms.push_back(&transform->GetTransform());
 	}
+
+	m_pPlayerTanks = players;
 }
 
 void EnemyControllerComponent::SetAllEnemies(std::vector<std::shared_ptr<dae::GameObject>>* pTanks)
 {
-	m_pTanks = pTanks;
+	m_pAllTanks = pTanks;
 }
 
 void EnemyControllerComponent::IsHit()
@@ -53,7 +56,7 @@ void EnemyControllerComponent::IsHit()
 
 void EnemyControllerComponent::Startup()
 {
-	m_pOwner->GetTransform().SetPosition(m_SpawnPoint.x, m_SpawnPoint.y, 0);
+	m_pOwner->GetTransform().SetPosition(m_SpawnPoint.x - CalculateBox().width / 2, m_SpawnPoint.y - CalculateBox().height / 2, 0);
 	AddObserver(m_pOwner->GetComponentOfType<EnemyStateComponent>());
 	m_pOwner->GetTransform().SetRect(CalculateBox());
 
@@ -109,6 +112,11 @@ void EnemyControllerComponent::Update(float deltaSec)
 	{
 		CheckIfNeedsToShootBullet(deltaSec);
 	}
+	else
+	{
+		CheckIfHitsTank(deltaSec);
+	}
+
 	TranslateSprite(deltaSec);
 
 	m_Velocity.x = 0.0f;
@@ -364,7 +372,7 @@ void EnemyControllerComponent::ShootBullet()
 	}
 
 	const auto gObject = std::make_shared<dae::GameObject>();
-	gObject->AddComponent(new EnemyBulletComponent(m_pLevelIndicesWalls, m_pTanks, 8, m_Size, { sin(M_PI * armDegrees / 180.0f), cos(M_PI * armDegrees / 180.0f) }, { m_pOwner->GetTransform().GetPosition().x + m_pOwner->GetTransform().GetRect().width / 2, m_pOwner->GetTransform().GetPosition().y + m_pOwner->GetTransform().GetRect().height / 2 }));
+	gObject->AddComponent(new EnemyBulletComponent(m_pLevelIndicesWalls, m_pAllTanks, 8, m_Size, { sin(M_PI * armDegrees / 180.0f), cos(M_PI * armDegrees / 180.0f) }, { m_pOwner->GetTransform().GetPosition().x + m_pOwner->GetTransform().GetRect().width / 2, m_pOwner->GetTransform().GetPosition().y + m_pOwner->GetTransform().GetRect().height / 2 }));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 }
 
@@ -430,6 +438,30 @@ void EnemyControllerComponent::CheckIfNeedsToShootBullet(float deltaSec)
 				{
 					ShootBullet();
 				}
+			}
+		}
+	}
+}
+
+void EnemyControllerComponent::CheckIfHitsTank(float deltaSec)
+{
+	for (const auto tank : m_pPlayerTanks)
+	{
+		auto tankPos = tank->GetTransform().GetPosition();
+		auto pos = m_pOwner->GetTransform().GetPosition();
+
+		auto x = abs(tankPos.x - pos.x);
+		auto y = abs(tankPos.y - pos.y);
+
+		if (x <= 20 && y <= 20)
+		{
+			if (tank->GetComponentOfType<PlayerControllerComponent>()->m_PlayerIndex == 0)
+			{
+				dae::EventQueue::GetInstance().Broadcast(new dae::Event("HitPlayer0"));
+			}
+			else if (tank->GetComponentOfType<PlayerControllerComponent>()->m_PlayerIndex == 1)
+			{
+				dae::EventQueue::GetInstance().Broadcast(new dae::Event("HitPlayer1"));
 			}
 		}
 	}

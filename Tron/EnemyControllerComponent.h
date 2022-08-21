@@ -45,8 +45,10 @@ private:
 	void UpdateAILogic(float deltaSec);
 	void ShootBullet();
 	void CheckIfNeedsToShootBullet(float deltaSec);
+	void CheckIfHitsTank(float deltaSec);
 
 	std::vector<dae::Transform*> m_pPlayerTransforms{};
+
 
 	enum class NeedUpdate
 	{
@@ -65,7 +67,8 @@ private:
 	float m_ElapsedSecAILogic{};
 	bool m_CheckAILogic{};
 
-	std::vector<std::shared_ptr<dae::GameObject>>* m_pTanks{};
+	std::vector<std::shared_ptr<dae::GameObject>>* m_pAllTanks{};
+	std::vector<std::shared_ptr<dae::GameObject>> m_pPlayerTanks{};
 
 	glm::vec2 m_SpawnPoint{};
 

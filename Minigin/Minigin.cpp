@@ -100,6 +100,8 @@ void dae::Minigin::Run()
 		float lag = 0.0f;
 		auto lastTime = std::chrono::high_resolution_clock::now();
 
+		srand(static_cast<unsigned>(time(NULL)));
+
 		auto audioFuture = std::async(launch::async, [&doContinue]()
 			{
 				const auto& audio = ServiceLocator::GetInstance().GetAudioService();

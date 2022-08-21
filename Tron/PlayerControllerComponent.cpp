@@ -15,19 +15,24 @@
 #include "SceneManager.h"
 #include "ShootCommand.h"
 
-PlayerControllerComponent::PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize, unsigned int playerIdx)
+PlayerControllerComponent::PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize, unsigned int playerIdx, glm::vec2 spawnPoint)
 	: ControllerComponent(pLevelIndices, pLevelIndicesWalls, playerDims, playerSize)
 {
-	dae::EventQueue::GetInstance().Subscribe("KilledPlayer0", this);
-	dae::EventQueue::GetInstance().Subscribe("KilledPlayer1", this);
-	m_PlayerIndex = playerIdx;
+	dae::EventQueue::GetInstance().Subscribe("HitPlayer0", this);
+	dae::EventQueue::GetInstance().Subscribe("HitPlayer1", this);
 
+	std::cout << "subbed " << std::endl;
+	m_PlayerIndex = playerIdx;
+	m_SpawnPoint = spawnPoint;
 	//Get the image
 	const auto gObject = std::make_shared<dae::GameObject>();
 	m_ArmDegrees = 0;
+	m_PreviousDirections = MoveDirections::Right;
 	gObject->AddComponent(new ArmComponent(m_Dims, m_Size, &m_ArmDegrees, &m_PreviousDirections));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 	m_ArmComponent = gObject;
+	m_CanShoot = true;
+
 }
 
 PlayerControllerComponent::~PlayerControllerComponent()
@@ -70,6 +75,14 @@ void PlayerControllerComponent::RotateArm(bool Clockwise)
 
 void PlayerControllerComponent::ShootBullet()
 {
+	if (!m_CanShoot)
+	{
+		return;
+	}
+
+	m_CanShoot = false;
+
+
 	if (m_IsDead)
 	{
 		return;
@@ -106,29 +119,34 @@ void PlayerControllerComponent::UpdateMovement(MoveDirections dir)
 
 bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 {
-	//std::cout << m_PlayerIndex << std::endl;
+	if (m_IsDead || !m_CanDie)
+		return false;
+
 	if (m_PlayerIndex == 0)
 	{
-		if (event->Message == "KilledPlayer0")
+		if (event->Message == "HitPlayer0")
 		{
-			m_ArmComponent->GetComponentOfType<ArmComponent>()->TankIsKilled();
-			dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
+			std::cout << "died0\n";
 
 			m_IsDead = true;
-			dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer0", this);
-			dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer1", this);
+			//std::cout << "unsubbed " << std::endl;
+
+			//dae::EventQueue::GetInstance().Unsubscribe("HitPlayer0", this);
+			//dae::EventQueue::GetInstance().Unsubscribe("HitPlayer1", this);
+			
 		}
 	}
 	else if (m_PlayerIndex == 1)
 	{
-		if (event->Message == "KilledPlayer1")
+		if (event->Message == "HitPlayer1")
 		{
-			m_ArmComponent->GetComponentOfType<ArmComponent>()->TankIsKilled();
-			dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
+			std::cout << "died1\n";
 
 			m_IsDead = true;
-			dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer0", this);
-			dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer1", this);
+			//std::cout << "unsubbed " << std::endl;
+
+			//dae::EventQueue::GetInstance().Unsubscribe("HitPlayer0", this);
+			//dae::EventQueue::GetInstance().Unsubscribe("HitPlayer1", this);
 		}
 	}	
 
@@ -138,17 +156,57 @@ bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 void PlayerControllerComponent::Startup()
 {
 	AddInput();
-	m_pOwner->GetTransform().SetPosition( 170,  156 + m_PlayerIndex * 10, 0 );
+	m_pOwner->GetTransform().SetPosition(m_SpawnPoint.x - CalculateBox().width / 2, m_SpawnPoint.y - CalculateBox().height / 2, 0 );
 	AddObserver(m_pOwner->GetComponentOfType<PlayerStateComponent>());
 	m_pOwner->GetTransform().SetRect(CalculateBox());
+	m_CanDie = false;
+	m_IsDead = false;
 }
 
 void PlayerControllerComponent::Update(float deltaSec)
 {
+	if (m_IsDead)
+	{
+		std::cout << "unsubbed " << std::endl;
+
+		dae::EventQueue::GetInstance().Unsubscribe("HitPlayer0", this);
+		dae::EventQueue::GetInstance().Unsubscribe("HitPlayer1", this);
+
+		m_ArmComponent->GetComponentOfType<ArmComponent>()->TankIsKilled();
+		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
+
+		if (m_PlayerIndex == 0)
+		{
+			dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledPlayer0"));
+		}
+		else
+		{
+			dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledPlayer1"));			
+		}
+	}
+
 	HitHorizontal();
 	HitVertical();
 	TranslateSprite(deltaSec);
 	UpdateReset();
+
+	m_ElapsedSecInvulnerability += deltaSec;
+	if (m_ElapsedSecInvulnerability >= 3)
+	{
+		m_CanDie = true;
+	}
+
+	if (!m_CanShoot)
+	{
+		m_ElapsedSecShooting += deltaSec;
+
+		if (m_ElapsedSecShooting >= 1.5f)
+		{
+			m_CanShoot = true;
+			m_ElapsedSecShooting = 0.0f;
+		}
+	}
+
 
 	m_ArmComponent->GetTransform().SetPosition(m_pOwner->GetTransform().GetPosition());
 }
@@ -276,4 +334,7 @@ void PlayerControllerComponent::AddInput()
 	input.SetCommandToButton(m_PlayerIndex, dae::ControllerButton::GAMEPAD_DPAD_LEFT, new MoveCommand(this, MoveDirections::Left), dae::InputManager::InputState::Hold);
 	input.SetCommandToButton(m_PlayerIndex, dae::ControllerButton::GAMEPAD_DPAD_RIGHT, new MoveCommand(this, MoveDirections::Right), dae::InputManager::InputState::Hold);
 	input.SetCommandToButton(m_PlayerIndex, dae::ControllerButton::GAMEPAD_DPAD_DOWN, new MoveCommand(this, MoveDirections::Down), dae::InputManager::InputState::Hold);
+	input.SetCommandToButton(m_PlayerIndex, dae::ControllerButton::GAMEPAD_RIGHT_SHOULDER, new MoveArmCommand(this, true), dae::InputManager::InputState::Hold);
+	input.SetCommandToButton(m_PlayerIndex, dae::ControllerButton::GAMEPAD_LEFT_SHOULDER, new MoveArmCommand(this, false), dae::InputManager::InputState::Hold);
+	input.SetCommandToButton(m_PlayerIndex, dae::ControllerButton::GAMEPAD_A, new ShootCommand(this), dae::InputManager::InputState::Hold);
 }

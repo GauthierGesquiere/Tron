@@ -41,7 +41,8 @@ void ArmComponent::Update(float deltaSec)
 {
 	Component::Update(deltaSec);
 
-	std::string fullPath{};
+
+	std::string fullPath;
 
 	int modifier{};
 
@@ -156,14 +157,6 @@ void ArmComponent::Update(float deltaSec)
 		}
 	}
 
-	//std::cout << abs(modifier - (*m_Degrees % 90)) << std::endl;
-
-	
-	if (abs(modifier - (temp % 90)))
-	{
-		
-	}
-
 	switch (abs(modifier - (temp % 90)))
 	{
 	case 0:
@@ -214,15 +207,4 @@ void ArmComponent::Update(float deltaSec)
 
 
 	m_RenderObj->GetTransform().SetPosition(m_pOwner->GetTransform().GetPosition() + m_Offset);
-	
-
-	/*if (m_Degrees <= 10)
-	{
-		if (const auto renderer = m_RenderObj->GetComponentOfType<RenderSpriteComponent>())
-		{
-			const std::string fullPath{ "LeftRight.png" };
-
-			renderer->SetTextureToDraw(m_SourcePath + fullPath, m_Dims, m_Dims, 0.5f, m_Dims * static_cast<unsigned int>(m_Size.x), m_Dims * static_cast<unsigned int>(m_Size.y), LoopType::ForwardReverseLoop, -1, m_FlipHorizontally, m_FlipVertically);
-		}
-	}*/
 }

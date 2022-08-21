@@ -36,6 +36,8 @@ private:
 	void Update(float deltaSec) override;
 
 	void CreateLevel(unsigned int levelIndex);
+	glm::vec2 ToPoint2f(const std::string& pos1);
+	glm::vec2 GetRandomPos();
 	void CreatePlayers(unsigned int amount);
 	void CreateEnemy();
 	void LoadData();
@@ -80,5 +82,7 @@ private:
 	int m_EnemiesKilled{};
 
 	unsigned int m_Score{};
+
+	std::string m_SpawnPoints{};
 };
 
