@@ -1,5 +1,6 @@
 #include "GameOverComponent.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 
@@ -56,32 +57,58 @@ GameOverComponent::GameOverComponent(Mode mode, unsigned width, unsigned height,
 	font = dae::ResourceManager::GetInstance().LoadFont("Tron/PlayerSelect/Lingua.otf", 20);
 
 	std::ifstream myfilein("HighScore.txt");
-	std::string highScore = "0";
+	std::string highScore;
+
+	std::vector<int> scores{};
+
 	if (myfilein)
 	{
-		std::getline(myfilein, highScore);
-	}
-
-	std::ofstream myfileout;
-	myfileout.open("HighScore.txt");
-	if (std::stoi(highScore) < score)
-	{
-		myfileout << score;
+		while (std::getline(myfilein, highScore))
+		{
+			scores.push_back(stoi(highScore));
+		}
 	}
 	else
 	{
-		myfileout << highScore;
+		int i{0};
+		while (i < 10)
+		{
+			scores.push_back(0);
+			i++;
+		}
 	}
-	myfileout.close();
-	
+
+	std::sort(scores.rbegin(), scores.rend());
+
 	std::string s = std::to_string(score);
 
 	gObject->AddComponent(new dae::TextRendererComponent(s, font));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 	gObject->GetComponentOfType<dae::TextRendererComponent>()->SetPosition(350, 160);
 
-	gObject = std::make_shared<dae::GameObject>();
-	gObject->AddComponent(new dae::TextRendererComponent(highScore, font));
-	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
-	gObject->GetComponentOfType<dae::TextRendererComponent>()->SetPosition(345, 210);
+	int i{ 0 };
+	for (const int score : scores)
+	{
+		gObject = std::make_shared<dae::GameObject>();
+		gObject->AddComponent(new dae::TextRendererComponent(std::to_string(score), font));
+		dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
+		gObject->GetComponentOfType<dae::TextRendererComponent>()->SetPosition(345, 210 + i);
+		i += 20;
+	}
+
+	if (score > scores[scores.size() - 1])
+	{
+		scores[scores.size() - 1] = score;
+	}
+
+	std::ofstream myfileout;
+	myfileout.open("HighScore.txt");
+
+	for (const auto score : scores)
+	{
+		myfileout << score << std::endl;
+	}
+	
+	myfileout.close();
+	
 }
