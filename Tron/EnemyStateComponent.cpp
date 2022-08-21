@@ -44,9 +44,6 @@ void EnemyStateComponent::Update(float deltaSec)
 	case State::DrivingHorizontal:
 		IsGoingRight(deltaSec);
 		break;
-	case State::Dying:
-		IsDying(deltaSec);
-		break;
 	case State::Nothing:
 		break;
 	default:
@@ -141,17 +138,4 @@ void EnemyStateComponent::IsGoingRight(float /*deltaSec*/)
 	}
 }
 
-void EnemyStateComponent::IsDying(float /*deltaSec*/)
-{
-	if (const auto renderer = m_pOwner->GetComponentOfType<RenderSpriteComponent>())
-	{
-		if (m_PreviousState != m_CurrentState)
-		{
-			m_PreviousState = m_CurrentState;
-			const std::string fullPath{ "Death.png" };
-
-			renderer->SetTextureToDraw(m_SourcePath + fullPath, m_PlayerDims, m_PlayerDims, 0.5f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::NoLoop);
-		}
-	}
-}
 

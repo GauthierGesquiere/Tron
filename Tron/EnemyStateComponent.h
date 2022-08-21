@@ -33,7 +33,6 @@ public:
 private:
 	void IsGoingUp(float deltaSec);
 	void IsGoingRight(float deltaSec);
-	void IsDying(float deltaSec);
 
 	EnemyType m_EnemyType{};
 	int m_ImageIdx{};

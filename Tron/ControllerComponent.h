@@ -52,7 +52,7 @@ protected:
 	//bool m_HitHorizontal{ false };
 	//bool m_HitVertical{ false };
 
-	int modifier{ 2 };
+	int modifier{ 3 };
 
 	bool m_CanMoveRight{ false };
 	bool m_CanMoveLeft{ false };

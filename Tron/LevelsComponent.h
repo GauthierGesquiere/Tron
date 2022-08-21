@@ -84,5 +84,7 @@ private:
 	unsigned int m_Score{};
 
 	std::string m_SpawnPoints{};
+
+	bool m_BroadcastedRestartLevel{};
 };
 

@@ -11,12 +11,13 @@
 #include "ControllerComponent.h"
 #include "EventListener.h"
 #include "GameObject.h"
+#include "LevelsComponent.h"
 #include "Subject.h"
 
 class PlayerControllerComponent : public ControllerComponent, public dae::Subject, public dae::EventListener
 {
 public:
-	PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize, unsigned int playerIdx, glm::vec2 spawnPoint);
+	PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize, unsigned int playerIdx, glm::vec2 spawnPoint, Mode mode);
 	//PlayerControllerComponent() = default;
 	~PlayerControllerComponent() override;
 	PlayerControllerComponent(const PlayerControllerComponent& other) = delete;
@@ -61,6 +62,8 @@ private:
 
 	glm::vec2 m_SpawnPoint{};
 	bool m_CanDie{};
+
+	Mode m_GameMode{};
 };
 
 

@@ -8,10 +8,11 @@
 #include "GameObject.h"
 #include "RenderSpriteComponent.h"
 
-PlayerStateComponent::PlayerStateComponent(unsigned displayWidth, unsigned displayHeight, unsigned int playerDims, glm::vec2 playerSize, int playerIdx)
+PlayerStateComponent::PlayerStateComponent(unsigned displayWidth, unsigned displayHeight, unsigned int playerDims, glm::vec2 playerSize, int playerIdx, Mode mode)
 	: StateComponent(displayWidth, displayHeight, playerDims, playerSize)
 {
 	m_PlayerIdx = playerIdx;
+	m_GameMode = mode;
 }
 
 PlayerStateComponent::~PlayerStateComponent()
@@ -23,7 +24,14 @@ void PlayerStateComponent::Startup()
 	if (const auto renderer = m_pOwner->GetComponentOfType<RenderSpriteComponent>())
 	{
 		std::string fullPath{ "LeftRight" };
-		fullPath += std::to_string(m_PlayerIdx) + ".png";
+		if (m_GameMode == Mode::Versus && m_PlayerIdx == 1)
+		{
+			fullPath += std::to_string(m_PlayerIdx + 1) + ".png";
+		}
+		else
+		{
+			fullPath += std::to_string(m_PlayerIdx) + ".png";
+		}
 
 		renderer->SetTextureToDraw(m_SourcePath + fullPath, m_PlayerDims, m_PlayerDims, 0.5f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::ForwardReverseLoop, -1, m_MirrorHorizontally);
 		renderer->SetFreeze(2);
@@ -45,9 +53,6 @@ void PlayerStateComponent::Update(float deltaSec)
 		break;
 	case State::Idle:
 		IsIdle(deltaSec);
-		break;
-	case State::Dying:
-		IsDying(deltaSec);
 		break;
 	case State::Nothing: 
 		break;
@@ -125,19 +130,6 @@ void PlayerStateComponent::OnNotify(const dae::GameObject& /*actor*/, dae::Event
 	delete event;
 }
 
-bool PlayerStateComponent::OnEvent(const dae::Event* event)
-{
-	if (event->Message == "KilledPlayer")
-	{
-		ElapsedSec = 0.0f;
-		m_CurrentState = State::Dying;
-		m_IsDead = true;
-		dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer", this);
-	}
-
-	return false;
-}
-
 void PlayerStateComponent::IsDrivingHorizontal(float /*deltaSec*/)
 {
 	//if encountered ladder and pressed up/down then is climbing
@@ -148,7 +140,14 @@ void PlayerStateComponent::IsDrivingHorizontal(float /*deltaSec*/)
 			m_PreviousState = m_CurrentState;
 			std::string fullPath{ "LeftRight" };
 
-			fullPath += std::to_string(m_PlayerIdx) + ".png";
+			if (m_GameMode == Mode::Versus && m_PlayerIdx == 1)
+			{
+				fullPath += std::to_string(m_PlayerIdx + 1) + ".png";
+			}
+			else
+			{
+				fullPath += std::to_string(m_PlayerIdx) + ".png";
+			}
 
 			renderer->SetTextureToDraw(m_SourcePath + fullPath, m_PlayerDims, m_PlayerDims, 0.5f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::ForwardReverseLoop, -1, m_MirrorHorizontally);
 		}
@@ -165,7 +164,14 @@ void PlayerStateComponent::IsDrivingVertical(float /*deltaSec*/)
 			m_PreviousState = m_CurrentState;
 			std::string fullPath{ "UpDown" };
 
-			fullPath += std::to_string(m_PlayerIdx) + ".png";
+			if (m_GameMode == Mode::Versus && m_PlayerIdx == 1)
+			{
+				fullPath += std::to_string(m_PlayerIdx + 1) + ".png";
+			}
+			else
+			{
+				fullPath += std::to_string(m_PlayerIdx) + ".png";
+			}
 
 			renderer->SetTextureToDraw(m_SourcePath + fullPath, m_PlayerDims, m_PlayerDims, 0.5f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::ForwardReverseLoop, -1, m_MirrorHorizontally, m_MirrorVertically);
 		}
@@ -175,31 +181,6 @@ void PlayerStateComponent::IsDrivingVertical(float /*deltaSec*/)
 void PlayerStateComponent::IsWinning(float /*deltaSec*/)
 {
 	//next level
-}
-
-void PlayerStateComponent::IsDying(float deltaSec)
-{
-	ElapsedSec += deltaSec;
-
-	//restart level
-	if (const auto renderer = m_pOwner->GetComponentOfType<RenderSpriteComponent>())
-	{
-		if (m_PreviousState != m_CurrentState)
-		{
-			m_PreviousState = m_CurrentState;
-			const std::string fullPath{ "Death.png" };
-
-			renderer->SetTextureToDraw(m_SourcePath + fullPath, m_PlayerDims, m_PlayerDims, 0.3f, m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.x), m_PlayerDims * static_cast<unsigned int>(m_PlayerSize.y), LoopType::NoLoop);
-		}
-
-		if (ElapsedSec >= renderer->GetTotalAmountOfTime())
-		{
-			ElapsedSec = 0.0f;
-			dae::EventQueue::GetInstance().Broadcast(new dae::Event("RestartLevel"));
-		}
-	}
-
-
 }
 
 void PlayerStateComponent::IsIdle(float /*deltaSec*/)

@@ -13,7 +13,6 @@ enum class State
 	DrivingHorizontal,
 	DrivingVertical,
 	Winning,
-	Dying,
 	Idle,
 	Nothing
 };

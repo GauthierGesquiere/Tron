@@ -25,7 +25,6 @@ LevelsComponent::LevelsComponent(Mode mode, unsigned int width, unsigned int hei
 	m_WindowWidth = width; //- 100;
 	m_WindowHeight = height; //-100;
 
-	dae::EventQueue::GetInstance().Subscribe("RestartLevel", this);
 	dae::EventQueue::GetInstance().Subscribe("KilledPlayer0", this);
 	dae::EventQueue::GetInstance().Subscribe("KilledPlayer1", this);
 	dae::EventQueue::GetInstance().Subscribe("KilledEnemy", this);
@@ -37,18 +36,10 @@ LevelsComponent::LevelsComponent(Mode mode, unsigned int width, unsigned int hei
 
 LevelsComponent::~LevelsComponent()
 {
-	/*dae::EventQueue::GetInstance().Unsubscribe("RestartLevel", this);
-	dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer0", this);
-	dae::EventQueue::GetInstance().Unsubscribe("KilledPlayer1", this);
-	dae::EventQueue::GetInstance().Unsubscribe("KilledEnemy", this);*/
 }
 
 bool LevelsComponent::OnEvent(const dae::Event* event)
 {
-	if (event->Message == "RestartLevel")
-	{
-		m_NeedsRestart = true;
-	}
 	if (event->Message == "KilledPlayer0")
 	{
 		PlayerAmount--;
@@ -90,6 +81,26 @@ void LevelsComponent::Startup()
 
 void LevelsComponent::Update(float deltaSec)
 {
+	
+	for (auto tank : m_pPlayers)
+	{
+		auto tankPos = tank->GetTransform().GetPosition();
+		tankPos.x += tank->GetTransform().GetRect().width / 2;
+		tankPos.y += tank->GetTransform().GetRect().height / 2;
+
+		auto pos = glm::vec2{337, 318 };
+
+		auto x = abs(tankPos.x - pos.x);
+		auto y = abs(tankPos.y - pos.y);
+
+		if (x <= 20 && y <= 20)
+		{
+			auto randPos = GetRandomPos();
+
+			tank->GetTransform().SetPosition(randPos.x - tank->GetTransform().GetRect().width / 2, randPos.y - tank->GetTransform().GetRect().height / 2, 0);
+		}
+	}
+
 	if (m_NeedsToLoadNewLevel)
 	{
 		m_ElapsedSecLoadNewLevel += deltaSec;
@@ -106,6 +117,11 @@ void LevelsComponent::Update(float deltaSec)
 	if (m_NeedsRestart)
 	{
 		m_ElapsedSecLevelRestart += deltaSec;
+		if (!m_BroadcastedRestartLevel)
+		{
+			dae::EventQueue::GetInstance().Broadcast(new dae::Event("RestartLevel"));
+			m_BroadcastedRestartLevel = true;
+		}
 
 		if (m_ElapsedSecLevelRestart >= 3)
 		{
@@ -119,7 +135,7 @@ void LevelsComponent::Update(float deltaSec)
 				GameOver();
 				return;
 			}
-
+			m_BroadcastedRestartLevel = false;
 			RemoveEverythingOnScene();
 
 			PickMode();
@@ -141,7 +157,6 @@ void LevelsComponent::CreateLevel(unsigned levelIndex)
 	//gObject->GetComponentOfType<RenderSpriteComponent>()->SetPosition(glm::vec2{ 500.f, 500.f });
 	m_SourceToDestRatio = gObject->GetComponentOfType<RenderSpriteComponent>()->GetSourceToDestRatio();
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
-
 
 	//Parse the svg file
 	fullPath = "Levels/Level" + std::to_string(levelIndex) + ".svg";
@@ -230,8 +245,8 @@ void LevelsComponent::CreatePlayers(unsigned amount)
 
 		const auto gObject = std::make_shared<dae::GameObject>();
 		gObject->AddComponent(new RenderSpriteComponent());
-		gObject->AddComponent(new PlayerStateComponent(m_WindowWidth, m_WindowHeight, m_PlayerDims, m_SourceToDestRatio, i));
-		gObject->AddComponent(new PlayerControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio, i, randPos));
+		gObject->AddComponent(new PlayerStateComponent(m_WindowWidth, m_WindowHeight, m_PlayerDims, m_SourceToDestRatio, i, m_Mode));
+		gObject->AddComponent(new PlayerControllerComponent(&m_LevelVertices, &m_pLevelIndicesWalls, m_PlayerDims, m_SourceToDestRatio, i, randPos, m_Mode));
 		dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 		m_pTanks.push_back(gObject);
 		gObject->GetComponentOfType<PlayerControllerComponent>()->SetAllEnemies(&m_pTanks);
@@ -241,7 +256,7 @@ void LevelsComponent::CreatePlayers(unsigned amount)
 
 void LevelsComponent::CreateEnemy()
 {
-	for (unsigned int i = 0; i < m_level + 20; ++i)
+	for (unsigned int i = 0; i < m_level + 2; ++i)
 	{
 		glm::vec2 randPos = GetRandomPos();
 

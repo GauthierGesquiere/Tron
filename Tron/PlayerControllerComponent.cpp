@@ -15,24 +15,30 @@
 #include "SceneManager.h"
 #include "ShootCommand.h"
 
-PlayerControllerComponent::PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize, unsigned int playerIdx, glm::vec2 spawnPoint)
+PlayerControllerComponent::PlayerControllerComponent(std::vector<std::vector<glm::vec2>>* pLevelIndices, std::vector<std::vector<glm::vec2>>* pLevelIndicesWalls, unsigned int playerDims, glm::vec2 playerSize, unsigned int playerIdx, glm::vec2 spawnPoint, Mode mode)
 	: ControllerComponent(pLevelIndices, pLevelIndicesWalls, playerDims, playerSize)
 {
 	dae::EventQueue::GetInstance().Subscribe("HitPlayer0", this);
 	dae::EventQueue::GetInstance().Subscribe("HitPlayer1", this);
+	dae::EventQueue::GetInstance().Subscribe("RestartLevel", this);
+
 
 	std::cout << "subbed " << std::endl;
 	m_PlayerIndex = playerIdx;
 	m_SpawnPoint = spawnPoint;
 	//Get the image
-	const auto gObject = std::make_shared<dae::GameObject>();
 	m_ArmDegrees = 0;
 	m_PreviousDirections = MoveDirections::Right;
-	gObject->AddComponent(new ArmComponent(m_Dims, m_Size, &m_ArmDegrees, &m_PreviousDirections));
-	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
-	m_ArmComponent = gObject;
-	m_CanShoot = true;
 
+	if (m_GameMode != Mode::Versus && m_PlayerIndex != 1)
+	{
+		const auto gObject = std::make_shared<dae::GameObject>();
+		gObject->AddComponent(new ArmComponent(m_Dims, m_Size, &m_ArmDegrees, &m_PreviousDirections));
+		dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
+		m_ArmComponent = gObject;
+	}
+	m_CanShoot = true;
+	m_GameMode = mode;
 }
 
 PlayerControllerComponent::~PlayerControllerComponent()
@@ -47,6 +53,11 @@ void PlayerControllerComponent::SetAllEnemies(std::vector<std::shared_ptr<dae::G
 
 void PlayerControllerComponent::RotateArm(bool Clockwise)
 {
+	if (m_GameMode == Mode::Versus && m_PlayerIndex == 1)
+	{
+		return;
+	}
+
 	if (m_IsDead)
 	{
 		return;
@@ -119,6 +130,14 @@ void PlayerControllerComponent::UpdateMovement(MoveDirections dir)
 
 bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 {
+	if (event->Message == "RestartLevel")
+	{
+		std::cout << "unsubbed " << std::endl;
+		dae::EventQueue::GetInstance().Unsubscribe("HitPlayer0", this);
+		dae::EventQueue::GetInstance().Unsubscribe("HitPlayer1", this);
+		dae::EventQueue::GetInstance().Unsubscribe("RestartLevel", this);
+	}
+
 	if (m_IsDead || !m_CanDie)
 		return false;
 
@@ -167,12 +186,15 @@ void PlayerControllerComponent::Update(float deltaSec)
 {
 	if (m_IsDead)
 	{
-		std::cout << "unsubbed " << std::endl;
+		//std::cout << "unsubbed " << std::endl;
 
-		dae::EventQueue::GetInstance().Unsubscribe("HitPlayer0", this);
-		dae::EventQueue::GetInstance().Unsubscribe("HitPlayer1", this);
+		//dae::EventQueue::GetInstance().Unsubscribe("HitPlayer0", this);
+		//dae::EventQueue::GetInstance().Unsubscribe("HitPlayer1", this);
 
-		m_ArmComponent->GetComponentOfType<ArmComponent>()->TankIsKilled();
+		if (m_ArmComponent)
+		{
+			m_ArmComponent->GetComponentOfType<ArmComponent>()->TankIsKilled();
+		}
 		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
 
 		if (m_PlayerIndex == 0)
@@ -206,9 +228,10 @@ void PlayerControllerComponent::Update(float deltaSec)
 			m_ElapsedSecShooting = 0.0f;
 		}
 	}
-
-
-	m_ArmComponent->GetTransform().SetPosition(m_pOwner->GetTransform().GetPosition());
+	if (m_ArmComponent)
+	{
+		m_ArmComponent->GetTransform().SetPosition(m_pOwner->GetTransform().GetPosition());
+	}
 }
 
 void PlayerControllerComponent::UpdateLeft()
@@ -218,6 +241,11 @@ void PlayerControllerComponent::UpdateLeft()
 		Notify(*m_pOwner, new dae::Event("IsDrivingLeft"));
 		m_Velocity.x = -m_MovementSpeed;
 		m_PreviousDirections = MoveDirections::Left;
+
+		if (m_GameMode == Mode::Versus && m_PlayerIndex == 1)
+		{
+			m_ArmDegrees = 180;
+		}
 	}
 	else if (m_CanMoveDown || m_CanMoveUp)
 	{
@@ -242,6 +270,11 @@ void PlayerControllerComponent::UpdateRight()
 		Notify(*m_pOwner, new dae::Event("IsDrivingRight"));
 		m_Velocity.x = m_MovementSpeed;
 		m_PreviousDirections = MoveDirections::Right;
+
+		if (m_GameMode == Mode::Versus && m_PlayerIndex == 1)
+		{
+			m_ArmDegrees = 0;
+		}
 	}
 	else if (m_CanMoveDown || m_CanMoveUp)
 	{
@@ -266,6 +299,11 @@ void PlayerControllerComponent::UpdateDown()
 		Notify(*m_pOwner, new dae::Event("IsDrivingDown"));
 		m_Velocity.y = m_MovementSpeed;
 		m_PreviousDirections = MoveDirections::Down;
+
+		if (m_GameMode == Mode::Versus && m_PlayerIndex == 1)
+		{
+			m_ArmDegrees = 270;
+		}
 	}
 	else if (m_CanMoveLeft|| m_CanMoveRight)
 	{
@@ -290,6 +328,11 @@ void PlayerControllerComponent::UpdateUp()
 		Notify(*m_pOwner, new dae::Event("IsDrivingUp"));
 		m_Velocity.y = -m_MovementSpeed;
 		m_PreviousDirections = MoveDirections::Up;
+
+		if (m_GameMode == Mode::Versus && m_PlayerIndex == 1)
+		{
+			m_ArmDegrees = 90;
+		}
 	}
 	else if (m_CanMoveLeft || m_CanMoveRight)
 	{

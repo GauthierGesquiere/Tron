@@ -5,13 +5,14 @@
 #pragma warning(pop)
 
 #include "EventListener.h"
+#include "LevelsComponent.h"
 #include "Observer.h"
 #include "StateComponent.h"
 
-class PlayerStateComponent : public StateComponent, public dae::Observer, public dae::EventListener
+class PlayerStateComponent : public StateComponent, public dae::Observer
 {
 public:
-	PlayerStateComponent(unsigned int displayWidth, unsigned int displayHeight, unsigned int playerDims, glm::vec2 playerSize, int playerIdx);
+	PlayerStateComponent(unsigned int displayWidth, unsigned int displayHeight, unsigned int playerDims, glm::vec2 playerSize, int playerIdx, Mode mode);
 	~PlayerStateComponent() override;
 	PlayerStateComponent(const PlayerStateComponent& other) = delete;
 	PlayerStateComponent(PlayerStateComponent&& other) = delete;
@@ -22,18 +23,18 @@ public:
 	void Update(float deltaSec) override;
 
 	void OnNotify(const dae::GameObject& actor, dae::Event* event) override;
-	bool OnEvent(const dae::Event* event) override; 
 
 private:
 	void IsDrivingHorizontal(float deltaSec);
 	void IsDrivingVertical(float deltaSec);
 	void IsWinning(float deltaSec);
-	void IsDying(float deltaSec);
 	void IsIdle(float deltaSec);
 
 	bool m_IsDead{};
 
 	int m_PlayerIdx{};
+
+	Mode m_GameMode{};
 };
 
 
