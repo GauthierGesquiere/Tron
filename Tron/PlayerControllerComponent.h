@@ -26,11 +26,12 @@ public:
 	PlayerControllerComponent& operator=(PlayerControllerComponent&& other) = delete;
 
 	void SetAllEnemies(std::vector<std::shared_ptr<dae::GameObject>>* pEnemies);
-
 	void RotateArm(bool Clockwise);
 	void ShootBullet();
 	void UpdateMovement(MoveDirections dir);
 	bool OnEvent(const dae::Event* event) override;
+	void Unsubscribe();
+	bool IsDead() { return m_IsDead; }
 
 	unsigned int m_PlayerIndex{};
 
@@ -64,6 +65,10 @@ private:
 	bool m_CanDie{};
 
 	Mode m_GameMode{};
+	bool m_DoneUnsubscribing;
+
+	int m_AmountOfHits{};
+
 };
 
 

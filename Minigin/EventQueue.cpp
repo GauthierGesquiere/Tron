@@ -10,7 +10,7 @@ dae::EventQueue::~EventQueue()
 
 void dae::EventQueue::Broadcast(Event* event)
 {
-	m_EventQue.push(event);
+ 	m_EventQue.push(event);
 }
 
 void dae::EventQueue::Subscribe(const std::string& eventType, EventListener* pListener)

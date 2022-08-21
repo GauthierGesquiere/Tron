@@ -50,7 +50,7 @@ PlayerSelectComponent::~PlayerSelectComponent()
 
 }
 
-bool PlayerSelectComponent::OnEvent(const dae::Event* event)
+bool PlayerSelectComponent::OnEvent(const dae::Event* /*event*/)
 {
 	return false;
 }
@@ -103,6 +103,16 @@ void PlayerSelectComponent::Startup()
 void PlayerSelectComponent::Update(float deltaSec)
 {
 	Component::Update(deltaSec);
+
+	if (m_StartGame)
+	{
+		m_ElapsedSec += deltaSec;
+		if (m_ElapsedSec >= 1)
+		{
+			m_StartGame = false;
+			StartGame();
+		}
+	}
 }
 
 void PlayerSelectComponent::StartGame()
@@ -133,4 +143,9 @@ void PlayerSelectComponent::AddInput()
 	input.SetCommandToKey(0, SDLK_s, new SelectModeCommand(this, Directions::Down), dae::InputManager::InputState::Pressed);
 	input.SetCommandToKey(0, SDLK_w, new SelectModeCommand(this, Directions::Up), dae::InputManager::InputState::Pressed);
 	input.SetCommandToKey(0, SDLK_SPACE, new NextSceneCommand(this), dae::InputManager::InputState::Pressed);
+
+	input.SetCommandToButton(0, dae::ControllerButton::GAMEPAD_DPAD_DOWN, new SelectModeCommand(this, Directions::Down), dae::InputManager::InputState::Pressed);
+	input.SetCommandToButton(0, dae::ControllerButton::GAMEPAD_DPAD_UP, new SelectModeCommand(this, Directions::Up), dae::InputManager::InputState::Pressed);
+	input.SetCommandToButton(0, dae::ControllerButton::GAMEPAD_A, new NextSceneCommand(this), dae::InputManager::InputState::Pressed);
+
 }

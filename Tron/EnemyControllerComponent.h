@@ -11,7 +11,7 @@
 #include <glm/glm.hpp>
 
 #include "EnemyStateComponent.h"
-#include "EventListener.h"
+
 
 
 #pragma warning(pop)
@@ -30,6 +30,7 @@ public:
 	void SetPlayerTransform(std::vector<std::shared_ptr<dae::GameObject>> players);
 	void SetAllEnemies(std::vector<std::shared_ptr<dae::GameObject>>* pEnemies);
 	void IsHit();
+	bool IsDead() const { return m_Health <= 0; }
 
 	bool m_IsInitialized{};
 

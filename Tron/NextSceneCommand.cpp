@@ -11,5 +11,5 @@ NextSceneCommand::NextSceneCommand(PlayerSelectComponent* p)
 
 void NextSceneCommand::Execute()
 {
-	m_PlayerSelectMode->StartGame();
+	m_PlayerSelectMode->m_StartGame = true;
 }

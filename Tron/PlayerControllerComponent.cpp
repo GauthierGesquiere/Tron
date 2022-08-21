@@ -21,16 +21,18 @@ PlayerControllerComponent::PlayerControllerComponent(std::vector<std::vector<glm
 	dae::EventQueue::GetInstance().Subscribe("HitPlayer0", this);
 	dae::EventQueue::GetInstance().Subscribe("HitPlayer1", this);
 	dae::EventQueue::GetInstance().Subscribe("RestartLevel", this);
+	dae::EventQueue::GetInstance().Subscribe("LoadNextLevel", this);
 
-
-	std::cout << "subbed " << std::endl;
+	m_GameMode = mode;
+	//std::cout << "subbed " << std::endl;
 	m_PlayerIndex = playerIdx;
 	m_SpawnPoint = spawnPoint;
+
 	//Get the image
 	m_ArmDegrees = 0;
 	m_PreviousDirections = MoveDirections::Right;
 
-	if (m_GameMode != Mode::Versus && m_PlayerIndex != 1)
+	if (!(m_GameMode == Mode::Versus && m_PlayerIndex == 1))
 	{
 		const auto gObject = std::make_shared<dae::GameObject>();
 		gObject->AddComponent(new ArmComponent(m_Dims, m_Size, &m_ArmDegrees, &m_PreviousDirections));
@@ -38,12 +40,11 @@ PlayerControllerComponent::PlayerControllerComponent(std::vector<std::vector<glm
 		m_ArmComponent = gObject;
 	}
 	m_CanShoot = true;
-	m_GameMode = mode;
 }
 
 PlayerControllerComponent::~PlayerControllerComponent()
 {
-	dae::InputManager::GetInstance().RemoveCommands();
+
 }
 
 void PlayerControllerComponent::SetAllEnemies(std::vector<std::shared_ptr<dae::GameObject>>* pEnemies)
@@ -132,10 +133,12 @@ bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 {
 	if (event->Message == "RestartLevel")
 	{
-		std::cout << "unsubbed " << std::endl;
-		dae::EventQueue::GetInstance().Unsubscribe("HitPlayer0", this);
-		dae::EventQueue::GetInstance().Unsubscribe("HitPlayer1", this);
-		dae::EventQueue::GetInstance().Unsubscribe("RestartLevel", this);
+		Unsubscribe();
+
+	}
+	if (event->Message == "LoadNextLevel")
+	{
+		Unsubscribe();
 	}
 
 	if (m_IsDead || !m_CanDie)
@@ -145,7 +148,7 @@ bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 	{
 		if (event->Message == "HitPlayer0")
 		{
-			std::cout << "died0\n";
+			//std::cout << "died0\n";
 
 			m_IsDead = true;
 			//std::cout << "unsubbed " << std::endl;
@@ -159,9 +162,19 @@ bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 	{
 		if (event->Message == "HitPlayer1")
 		{
-			std::cout << "died1\n";
-
-			m_IsDead = true;
+			//std::cout << "died1\n";
+			if (m_GameMode == Mode::Versus)
+			{
+				m_AmountOfHits++;
+				if (m_AmountOfHits >= 3)
+				{
+					m_IsDead = true;
+				}
+			}
+			else
+			{
+				m_IsDead = true;
+			}
 			//std::cout << "unsubbed " << std::endl;
 
 			//dae::EventQueue::GetInstance().Unsubscribe("HitPlayer0", this);
@@ -170,6 +183,15 @@ bool PlayerControllerComponent::OnEvent(const dae::Event* event)
 	}	
 
 	return false;
+}
+
+void PlayerControllerComponent::Unsubscribe()
+{
+	//std::cout << "unsubbed 1" << std::endl;
+	dae::EventQueue::GetInstance().Unsubscribe("HitPlayer0", this);
+	dae::EventQueue::GetInstance().Unsubscribe("HitPlayer1", this);
+	dae::EventQueue::GetInstance().Unsubscribe("RestartLevel", this);
+	dae::EventQueue::GetInstance().Unsubscribe("LoadNextLevel", this);
 }
 
 void PlayerControllerComponent::Startup()
@@ -184,6 +206,12 @@ void PlayerControllerComponent::Startup()
 
 void PlayerControllerComponent::Update(float deltaSec)
 {
+	if (m_DoneUnsubscribing)
+	{
+		dae::EventQueue::GetInstance().Broadcast(new dae::Event("LoadNextLevel"));
+		m_DoneUnsubscribing = false;
+	}
+
 	if (m_IsDead)
 	{
 		//std::cout << "unsubbed " << std::endl;
@@ -363,6 +391,8 @@ void PlayerControllerComponent::UpdateReset()
 
 void PlayerControllerComponent::AddInput()
 {
+	std::cout << "addplayer" << std::endl;
+
 	auto& input = dae::InputManager::GetInstance();
 	input.SetCommandToKey(m_PlayerIndex, SDLK_a, new MoveCommand(this, MoveDirections::Left), dae::InputManager::InputState::Hold);
 	input.SetCommandToKey(m_PlayerIndex, SDLK_d, new MoveCommand(this, MoveDirections::Right), dae::InputManager::InputState::Hold);

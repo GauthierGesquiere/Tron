@@ -29,7 +29,7 @@ EnemyControllerComponent::EnemyControllerComponent(std::vector<std::vector<glm::
 
 void EnemyControllerComponent::SetPlayerTransform(std::vector<std::shared_ptr<dae::GameObject>> players)
 {
-	for (const auto transform : players)
+	for (const auto& transform : players)
 	{
 		m_pPlayerTransforms.push_back(&transform->GetTransform());
 	}
@@ -45,14 +45,23 @@ void EnemyControllerComponent::SetAllEnemies(std::vector<std::shared_ptr<dae::Ga
 void EnemyControllerComponent::IsHit()
 {
 	m_Health--;
-
-	if (m_Health <= 0)
+	//std::cout << m_Health << std::endl;
+	if (m_Health == 0)
 	{
 		dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledEnemy"));
+
+		if (m_Type == EnemyType::Tank)
+		{
+			dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledTank"));
+		}
+		else
+		{
+			dae::EventQueue::GetInstance().Broadcast(new dae::Event("KilledRecognizer"));
+		}
+
 		dae::SceneManager::GetInstance().GetActiveScene()->Remove(m_pOwner);
 	}
 }
-
 
 void EnemyControllerComponent::Startup()
 {
@@ -206,7 +215,7 @@ void EnemyControllerComponent::UpdateAILogic(float deltaSec)
 
 	m_CheckAILogic = false;
 
-	const int randInt = rand() % 10;
+	int randInt = rand() % 10;
 	switch (m_NeededUpdate)
 	{
 	case NeedUpdate::Up:
@@ -256,7 +265,7 @@ void EnemyControllerComponent::UpdateAILogic(float deltaSec)
 
 	if (m_CanMoveLeft)
 	{
-		int randInt = rand() % 10;
+		randInt = rand() % 10;
 
 		if (m_NeededUpdate == NeedUpdate::Right)
 		{
@@ -274,7 +283,7 @@ void EnemyControllerComponent::UpdateAILogic(float deltaSec)
 	}
 	if (m_CanMoveDown)
 	{
-		int randInt = rand() % 10;
+		randInt = rand() % 10;
 
 		if (m_NeededUpdate == NeedUpdate::Up)
 		{
@@ -292,7 +301,7 @@ void EnemyControllerComponent::UpdateAILogic(float deltaSec)
 	}
 	if (m_CanMoveRight)
 	{
-		int randInt = rand() % 10;
+		randInt = rand() % 10;
 
 		if (m_NeededUpdate == NeedUpdate::Left)
 		{
@@ -310,7 +319,7 @@ void EnemyControllerComponent::UpdateAILogic(float deltaSec)
 	}
 	if (m_CanMoveUp)
 	{
-		int randInt = rand() % 10;
+		randInt = rand() % 10;
 
 		if (m_NeededUpdate == NeedUpdate::Down)
 		{
@@ -351,7 +360,7 @@ void EnemyControllerComponent::ShootBullet()
 {
 	m_JustShot = true;
 
-	int armDegrees;
+	int armDegrees{};
 
 	switch (m_NeededUpdate)
 	{
@@ -372,7 +381,13 @@ void EnemyControllerComponent::ShootBullet()
 	}
 
 	const auto gObject = std::make_shared<dae::GameObject>();
-	gObject->AddComponent(new EnemyBulletComponent(m_pLevelIndicesWalls, m_pAllTanks, 8, m_Size, { sin(M_PI * armDegrees / 180.0f), cos(M_PI * armDegrees / 180.0f) }, { m_pOwner->GetTransform().GetPosition().x + m_pOwner->GetTransform().GetRect().width / 2, m_pOwner->GetTransform().GetPosition().y + m_pOwner->GetTransform().GetRect().height / 2 }));
+	gObject->AddComponent(new EnemyBulletComponent(m_pLevelIndicesWalls, m_pAllTanks, 8, m_Size,
+	                                               glm::vec2{ static_cast<float>(sin(M_PI * armDegrees / 180.0f)), static_cast<float>(cos(M_PI * armDegrees / 180.0f))}, glm::vec2{
+		                                               m_pOwner->GetTransform().GetPosition().x + m_pOwner->
+		                                               GetTransform().GetRect().width / 2,
+		                                               m_pOwner->GetTransform().GetPosition().y + m_pOwner->
+		                                               GetTransform().GetRect().height / 2
+	                                               }));
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 }
 
@@ -400,11 +415,9 @@ void EnemyControllerComponent::CheckIfNeedsToShootBullet(float deltaSec)
 			return;
 		}
 
-		const int x = m_pPlayerTransforms[i]->GetPosition().x - m_pOwner->GetTransform().GetPosition().x;
-		const int y = m_pPlayerTransforms[i]->GetPosition().y - m_pOwner->GetTransform().GetPosition().y;
-
-
-
+		const int x = static_cast<int>(m_pPlayerTransforms[i]->GetPosition().x - m_pOwner->GetTransform().GetPosition().x);
+		const int y = static_cast<int>(m_pPlayerTransforms[i]->GetPosition().y - m_pOwner->GetTransform().GetPosition().y);
+		
 		if (abs(x) <= 5)
 		{
 			if (y > 0)
@@ -443,12 +456,12 @@ void EnemyControllerComponent::CheckIfNeedsToShootBullet(float deltaSec)
 	}
 }
 
-void EnemyControllerComponent::CheckIfHitsTank(float deltaSec)
+void EnemyControllerComponent::CheckIfHitsTank(float /*deltaSec*/)
 {
 	for (const auto tank : m_pPlayerTanks)
 	{
-		auto tankPos = tank->GetTransform().GetPosition();
-		auto pos = m_pOwner->GetTransform().GetPosition();
+		const auto tankPos = tank->GetTransform().GetPosition();
+		const auto pos = m_pOwner->GetTransform().GetPosition();
 
 		auto x = abs(tankPos.x - pos.x);
 		auto y = abs(tankPos.y - pos.y);

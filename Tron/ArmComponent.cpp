@@ -46,7 +46,7 @@ void ArmComponent::Update(float deltaSec)
 
 	int modifier{};
 
-	const int temp = floor(*m_Degrees);
+	const int temp = static_cast<int>(floor(*m_Degrees));
 
 	if (temp < 90 || temp == 360)
 	{

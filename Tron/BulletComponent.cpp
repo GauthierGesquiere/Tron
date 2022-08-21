@@ -158,6 +158,9 @@ bool BulletComponent::CheckIfHitTank()
 		{
 			if (tank->GetComponentOfType<PlayerControllerComponent>())
 			{
+				if (tank->GetComponentOfType<PlayerControllerComponent>()->IsDead())
+					return false;
+
 				if (tank->GetComponentOfType<PlayerControllerComponent>()->m_PlayerIndex == 0)
 				{
 					dae::EventQueue::GetInstance().Broadcast(new dae::Event("HitPlayer0"));
@@ -179,6 +182,9 @@ bool BulletComponent::CheckIfHitTank()
 
 			if (tank->GetComponentOfType<EnemyControllerComponent>())
 			{
+				if (tank->GetComponentOfType<EnemyControllerComponent>()->IsDead())
+					return false;
+
 				dae::EventQueue::GetInstance().Unsubscribe("ClearAllBullets", this);
 				tank->GetComponentOfType<EnemyControllerComponent>()->IsHit();
 				//dae::SceneManager::GetInstance().GetActiveScene()->Remove(tank);

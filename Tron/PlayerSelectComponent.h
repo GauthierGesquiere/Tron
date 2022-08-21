@@ -24,20 +24,24 @@ public:
 	PlayerSelectComponent& operator=(PlayerSelectComponent&& other) = delete;
 
 	bool OnEvent(const dae::Event* event) override;
-	void StartGame();
 	void ChangeMode(Directions dir);
+
+	bool m_StartGame{};
 
 private:
 	void Startup() override;
 	void Update(float deltaSec) override;
 
 	void AddInput();
+	void StartGame();
 
 	unsigned int m_WindowWidth;
 	unsigned int m_WindowHeight{};
 
 	Mode m_CurrentMode{ Mode::Singleplayer };
 	std::shared_ptr<dae::GameObject> m_Selection{};
+
+	float m_ElapsedSec{};
 };
 
 

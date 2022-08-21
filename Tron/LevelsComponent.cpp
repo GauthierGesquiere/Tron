@@ -9,6 +9,8 @@
 #include "EventQueue.h"
 #include "GameObject.h"
 #include "GameOverComponent.h"
+#include "InputManager.h"
+#include "NextLevelCommand.h"
 #include "PlayerControllerComponent.h"
 #include "PlayerStateComponent.h"
 #include "RenderSpriteComponent.h"
@@ -28,18 +30,41 @@ LevelsComponent::LevelsComponent(Mode mode, unsigned int width, unsigned int hei
 	dae::EventQueue::GetInstance().Subscribe("KilledPlayer0", this);
 	dae::EventQueue::GetInstance().Subscribe("KilledPlayer1", this);
 	dae::EventQueue::GetInstance().Subscribe("KilledEnemy", this);
+	dae::EventQueue::GetInstance().Subscribe("KilledTank", this);
+	dae::EventQueue::GetInstance().Subscribe("KilledRecognizer", this);
+	dae::EventQueue::GetInstance().Subscribe("LoadNextLevel", this);
+	dae::EventQueue::GetInstance().Subscribe("AddInput", this);
 
 	PickMode();
-
-	LoadData();
 }
 
 LevelsComponent::~LevelsComponent()
 {
+	dae::InputManager::GetInstance().RemoveCommands();
+	std::cout << "removedestr" << std::endl;
+
 }
 
 bool LevelsComponent::OnEvent(const dae::Event* event)
 {
+	//if (event->Message == "AddInput")
+	//{
+	//	m_NeedsInput = true;
+	//	m_AmountOfAddInput++;
+	//}
+	if (event->Message == "LoadNextLevel")
+	{
+		m_ElapsedSecLoadNewLevel = 2.0f;
+		m_NeedsToLoadNewLevel = true;
+	}
+	if (event->Message == "KilledTank")
+	{
+		m_Score += 100;
+	}
+	if (event->Message == "KilledRecognizer")
+	{
+		m_Score += 250;
+	}
 	if (event->Message == "KilledPlayer0")
 	{
 		PlayerAmount--;
@@ -53,7 +78,7 @@ bool LevelsComponent::OnEvent(const dae::Event* event)
 		PlayerAmount--;
 		if (m_Mode == Mode::Versus)
 		{
-			PlayerAmount--;
+			m_NeedsToLoadNewLevel = true;
 		}
 	}
 	if (event->Message == "KilledEnemy")
@@ -76,15 +101,19 @@ bool LevelsComponent::OnEvent(const dae::Event* event)
 
 void LevelsComponent::Startup()
 {
-	
+	AddInput();
 }
 
 void LevelsComponent::Update(float deltaSec)
 {
-	
-	for (auto tank : m_pPlayers)
+	if (m_NeedsInput && m_AmountOfRestarts > 0)
 	{
-		auto tankPos = tank->GetTransform().GetPosition();
+		AddInput();
+	}
+
+	for (const auto tank : m_pPlayers)
+	{
+		glm::vec3 tankPos = tank->GetTransform().GetPosition();
 		tankPos.x += tank->GetTransform().GetRect().width / 2;
 		tankPos.y += tank->GetTransform().GetRect().height / 2;
 
@@ -107,9 +136,14 @@ void LevelsComponent::Update(float deltaSec)
 
 		if (m_ElapsedSecLoadNewLevel >= 3)
 		{
-			LoadNewLevel();
-			m_ElapsedSecLoadNewLevel = 0.0f;
+
 			m_NeedsToLoadNewLevel = false;
+			m_ElapsedSecLoadNewLevel = 0.0f;
+			LoadNewLevel();
+			dae::InputManager::GetInstance().RemoveCommands();
+
+			m_NeedsInput = true;
+
 		}
 	}
 
@@ -136,11 +170,27 @@ void LevelsComponent::Update(float deltaSec)
 				return;
 			}
 			m_BroadcastedRestartLevel = false;
+			m_EnemiesKilled = 0;
+			PlayerAmount = 0;
 			RemoveEverythingOnScene();
-
 			PickMode();
+			dae::InputManager::GetInstance().RemoveCommands();
+
+			m_NeedsInput = true;
+
 		}
 	}
+}
+
+void LevelsComponent::AddInput()
+{
+	std::cout << "addLevel"<< std::endl;
+
+	auto& input = dae::InputManager::GetInstance();
+	input.SetCommandToKey(0, SDLK_SPACE, new NextLevelCommand(), dae::InputManager::InputState::Released);
+	input.SetCommandToButton(0, dae::ControllerButton::GAMEPAD_START, new NextLevelCommand(), dae::InputManager::InputState::Released);
+
+	m_NeedsInput = false;
 }
 
 void LevelsComponent::CreateLevel(unsigned levelIndex)
@@ -235,6 +285,7 @@ glm::vec2 LevelsComponent::GetRandomPos()
 			return randPos;
 		}
 	}
+	return glm::vec2{};
 }
 
 void LevelsComponent::CreatePlayers(unsigned amount)
@@ -265,11 +316,11 @@ void LevelsComponent::CreateEnemy()
 		int randInt = rand() % 10;
 
 		EnemyType type;
-		//if (randInt < 8)
-		//{
-		//	type = EnemyType::Tank;
-		//}
-		//else
+		if (randInt < 8)
+		{
+			type = EnemyType::Tank;
+		}
+		else
 		{
 			type = EnemyType::Recognizer;
 		}
@@ -283,11 +334,6 @@ void LevelsComponent::CreateEnemy()
 		m_pEnemies.push_back(gObject);
 		m_pTanks.push_back(gObject);
 	}
-}
-
-void LevelsComponent::LoadData()
-{
-	
 }
 
 void LevelsComponent::PickMode()
@@ -316,6 +362,10 @@ void LevelsComponent::PickMode()
 
 void LevelsComponent::GameOver()
 {
+	dae::InputManager::GetInstance().RemoveCommands();
+	std::cout << "removegameiover" << std::endl;
+
+
 	RemoveEverythingOnScene();
 
 	//Make Scene
@@ -325,7 +375,7 @@ void LevelsComponent::GameOver()
 
 
 	const auto gObject = std::make_shared<dae::GameObject>();
-	const auto gameOverComponent = new GameOverComponent(m_Mode, m_WindowWidth, m_WindowHeight, 2);
+	const auto gameOverComponent = new GameOverComponent(m_Mode, m_WindowWidth, m_WindowHeight, m_Score);
 	gObject->AddComponent(gameOverComponent);
 	gameScene.Add(gObject);
 
@@ -334,13 +384,21 @@ void LevelsComponent::GameOver()
 
 void LevelsComponent::LoadNewLevel()
 {
+	PlayerAmount = 0;
+	m_EnemiesKilled = 0;
 	RemoveEverythingOnScene();
 	m_level++;
 	if (m_level > 3)
 	{
 		m_level = 1;
 	}
+
 	PickMode();
+}
+
+void LevelsComponent::NextLevel()
+{
+	LoadNewLevel();
 }
 
 void LevelsComponent::RemoveEverythingOnScene()
@@ -361,6 +419,7 @@ void LevelsComponent::RemoveEverythingOnScene()
 
 	for (auto& player : m_pPlayers)
 	{
+		player->GetComponentOfType<PlayerControllerComponent>()->Unsubscribe();
 		dae::SceneManager::GetInstance().GetActiveScene()->Remove(player);
 	}
 

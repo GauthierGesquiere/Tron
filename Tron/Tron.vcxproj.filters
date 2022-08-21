@@ -84,6 +84,9 @@
     <ClCompile Include="GameOverComponent.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="NextLevelCommand.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TronGame.h">
@@ -145,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="GameOverComponent.h">
       <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="NextLevelCommand.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

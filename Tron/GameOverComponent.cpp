@@ -86,14 +86,14 @@ GameOverComponent::GameOverComponent(Mode mode, unsigned width, unsigned height,
 	dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
 	gObject->GetComponentOfType<dae::TextRendererComponent>()->SetPosition(350, 160);
 
-	int i{ 0 };
-	for (const int score : scores)
+	float i{ 0 };
+	for (const int sc : scores)
 	{
 		gObject = std::make_shared<dae::GameObject>();
-		gObject->AddComponent(new dae::TextRendererComponent(std::to_string(score), font));
+		gObject->AddComponent(new dae::TextRendererComponent(std::to_string(sc), font));
 		dae::SceneManager::GetInstance().GetActiveScene()->Add(gObject);
-		gObject->GetComponentOfType<dae::TextRendererComponent>()->SetPosition(345, 210 + i);
-		i += 20;
+		gObject->GetComponentOfType<dae::TextRendererComponent>()->SetPosition(345.f, 210.f + i);
+		i += 20.f;
 	}
 
 	if (score > scores[scores.size() - 1])
@@ -104,9 +104,9 @@ GameOverComponent::GameOverComponent(Mode mode, unsigned width, unsigned height,
 	std::ofstream myfileout;
 	myfileout.open("HighScore.txt");
 
-	for (const auto score : scores)
+	for (const auto sc : scores)
 	{
-		myfileout << score << std::endl;
+		myfileout << sc << std::endl;
 	}
 	
 	myfileout.close();
